@@ -723,15 +723,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c87899ed74a1a3b4e8d0737c17b73531, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 10
+  acceleration: 100
+  maxSpeed: 10
+  stoppingSpeed: 25
+  airStoppingSpeed: 15
   maxJumpHeight: 5
   minJumpHeight: 1
   maxJumpTime: 0.44
   jumpCount: 2
   airControl: 1
-  airControlFactor: 0.75
-  maxVelocity: 10
-  fallingJumpBuffer: 120
+  airControlFactor: 0.66
+  ledgeForgivenessTime: 120
+  velocity: {x: 0, y: 0, z: 0}
 --- !u!143 &1209891257
 CharacterController:
   m_ObjectHideFlags: 0
@@ -885,7 +888,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1452397735}
   m_LocalRotation: {x: 0.30070576, y: 0, z: 0, w: 0.953717}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalPosition: {x: -5, y: 10, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -907,6 +910,7 @@ MonoBehaviour:
   followHeight: 5
   moveSpeed: 10
   rotateSpeed: 10
+  camRotSpeed: 8
 --- !u!1 &1558543910
 GameObject:
   m_ObjectHideFlags: 0

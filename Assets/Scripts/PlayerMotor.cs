@@ -4,7 +4,10 @@ using UnityEngine;
 
 public class PlayerMotor : MonoBehaviour {
 
-    public float moveSpeed = 12.5f;
+    public float acceleration = 3;
+    public float maxSpeed = 10;
+    public float stoppingSpeed = 10f;
+    public float airStoppingSpeed = 0.95f;
     public float maxJumpHeight = 5f;
     public float minJumpHeight = 1f;
     public float maxJumpTime = 0.44f;
@@ -12,10 +15,12 @@ public class PlayerMotor : MonoBehaviour {
     public bool airControl = true;
     [Range(0, 1)]
     public float airControlFactor = 0.75f;
-    public float maxVelocity = 10;
+    
 
     // Time in ms the player has when falling that they can still do a full double jump
     public int ledgeForgivenessTime = 120;
+
+    public Vector3 velocity = Vector3.zero;
 
     private bool grounded = false;
     private Vector3 move = Vector3.zero;
@@ -26,7 +31,6 @@ public class PlayerMotor : MonoBehaviour {
     float gravity = 0;
     float jumpVelocity = 0;
     float velocityJumpTermination = 0;
-
 
     // Use this for initialization
     void Start () {
@@ -52,6 +56,9 @@ public class PlayerMotor : MonoBehaviour {
 
         if (!grounded)
         {
+
+            CalculateDrag();
+
             timer += 1000 * Time.deltaTime;
             move.y -= gravity * Time.deltaTime;
             if(timer >= ledgeForgivenessTime && jumpCounter < 1)
@@ -61,8 +68,8 @@ public class PlayerMotor : MonoBehaviour {
 
             if (airControl)
             {
-                move.x = ((inputX * airControlFactor) * moveSpeed * inputModifyFactor);
-                move.z = ((inputY * airControlFactor) * moveSpeed * inputModifyFactor);
+                move.x = ((inputX * airControlFactor) * acceleration * inputModifyFactor);
+                move.z = ((inputY * airControlFactor) * acceleration * inputModifyFactor);
             }
             
             if (Input.GetButtonUp("Jump") && move.y > 0)
@@ -81,8 +88,9 @@ public class PlayerMotor : MonoBehaviour {
         }
         else
         {
-            move.x = (inputX * moveSpeed * inputModifyFactor);
-            move.z = (inputY * moveSpeed * inputModifyFactor);
+            CalculateDrag();
+            move.x = (inputX * acceleration * inputModifyFactor);
+            move.z = (inputY * acceleration * inputModifyFactor);
             move.y = -0.75f;
             if (Input.GetButtonDown("Jump"))
             {
@@ -92,16 +100,65 @@ public class PlayerMotor : MonoBehaviour {
             
         }
 
-        
-        grounded = (characterController.Move(move * Time.deltaTime) & CollisionFlags.Below) !=0;
+        CalculateVelocity();
+
+        grounded = (characterController.Move(velocity * Time.deltaTime) & CollisionFlags.Below) !=0;
          //if we became or stayed grounded on this frame, reset the jump counter
         if (grounded)
         {
             jumpCounter = 0;
             timer = 0;
         }
+
     }
 
 
+    void CalculateVelocity()
+    {
+        velocity.x += move.x * Time.deltaTime;
+        velocity.y = move.y;
+        velocity.z += move.z * Time.deltaTime;
+
+        velocity.x = Mathf.Clamp(velocity.x, -maxSpeed, maxSpeed);
+        velocity.z = Mathf.Clamp(velocity.z, -maxSpeed, maxSpeed);
+    }
+
+    void CalculateDrag()
+    {
+
+        float drag = grounded ? stoppingSpeed : airStoppingSpeed;
+
+        if (inputX == 0)
+        {
+            if (velocity.x > 0.1f)
+            {
+                velocity.x -= drag * Time.deltaTime;
+            }
+            else if (velocity.x < -0.1f)
+            {
+                velocity.x += drag * Time.deltaTime;
+            }
+            else
+            {
+                velocity.x = 0;
+            }
+        }
+
+        if(inputY == 0)
+        {
+            if (velocity.z > 0.1f)
+            {
+                velocity.z -= drag * Time.deltaTime;
+            }
+            else if (velocity.z < -0.1f)
+            {
+                velocity.z += drag * Time.deltaTime;
+            }
+            else
+            {
+                velocity.z = 0;
+            }
+        }
+    }
 
 }

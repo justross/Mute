@@ -4,36 +4,37 @@ using UnityEngine;
 
 public class PlayerMotor : MonoBehaviour {
 
-    public float moveSpeed = 10f;
+    public float moveSpeed = 12.5f;
     public float maxJumpHeight = 5f;
     public float minJumpHeight = 1f;
-    public float maxJumpTime = 0.5f;
-    public float stoppingSpeed = 10f;
-    public AnimationCurve stoppingCurve;
-
+    public float maxJumpTime = 0.44f;
+    public int jumpCount = 2;
     public bool airControl = true;
-    [Range(0,1)]
+    [Range(0, 1)]
     public float airControlFactor = 0.75f;
-        
-    private CharacterController characterController;
-
-
     public float maxVelocity = 10;
 
+    // Time in ms the player has when falling that they can still do a full double jump
+    public int ledgeForgivenessTime = 120;
+
     private bool grounded = false;
-    bool doubleJumped = false;
     private Vector3 move = Vector3.zero;
-    float gravity;
-    float jumpVelocity;
-    float velocityJumpTermination;
     private float inputX = 0;
     private float inputY = 0;
+    private CharacterController characterController = null;
+    int jumpCounter = 0;
+    float gravity = 0;
+    float jumpVelocity = 0;
+    float velocityJumpTermination = 0;
+
 
     // Use this for initialization
     void Start () {
         characterController = GetComponent<CharacterController>();
 	}
-	
+
+
+    float timer = 0;
 	// Update is called once per frame
 	void Update () {
         inputX = Input.GetAxisRaw("Horizontal");
@@ -51,8 +52,12 @@ public class PlayerMotor : MonoBehaviour {
 
         if (!grounded)
         {
-
+            timer += 1000 * Time.deltaTime;
             move.y -= gravity * Time.deltaTime;
+            if(timer >= ledgeForgivenessTime && jumpCounter < 1)
+            {
+                jumpCounter++;
+            }
 
             if (airControl)
             {
@@ -65,10 +70,12 @@ public class PlayerMotor : MonoBehaviour {
                 //choose the minimum between the exit velocity and current upward velocity
                 move.y = Mathf.Min(velocityJumpTermination, move.y);
             }
-            if (Input.GetButtonDown("Jump") && !doubleJumped)
+
+            if (Input.GetButtonDown("Jump") && jumpCounter < jumpCount)
             {
+                
                 move.y = jumpVelocity;
-                doubleJumped = true;
+                jumpCounter++;
             }
 
         }
@@ -77,16 +84,22 @@ public class PlayerMotor : MonoBehaviour {
             move.x = (inputX * moveSpeed * inputModifyFactor);
             move.z = (inputY * moveSpeed * inputModifyFactor);
             move.y = -0.75f;
-            doubleJumped = false;
             if (Input.GetButtonDown("Jump"))
             {
                 move.y = jumpVelocity;
+                jumpCounter++;
             }
             
         }
 
+        
         grounded = (characterController.Move(move * Time.deltaTime) & CollisionFlags.Below) !=0;
-
+         //if we became or stayed grounded on this frame, reset the jump counter
+        if (grounded)
+        {
+            jumpCounter = 0;
+            timer = 0;
+        }
     }
 
 

@@ -727,16 +727,11 @@ MonoBehaviour:
   maxJumpHeight: 5
   minJumpHeight: 1
   maxJumpTime: 0.44
-  stoppingSpeed: 10
-  stoppingCurve:
-    serializedVersion: 2
-    m_Curve: []
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
+  jumpCount: 2
   airControl: 1
   airControlFactor: 0.75
   maxVelocity: 10
+  fallingJumpBuffer: 120
 --- !u!143 &1209891257
 CharacterController:
   m_ObjectHideFlags: 0

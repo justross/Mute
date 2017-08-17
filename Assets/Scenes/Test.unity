@@ -723,9 +723,9 @@ MonoBehaviour:
   target: {fileID: 1209891260}
   followDistance: 7
   followHeight: 5
-  moveSpeed: 2
-  rotateSensitivity: 2
-  rotateDamping: 50
+  moveSpeed: 5
+  rotateSensitivity: 2.25
+  rotateDamping: 75
   maxRotate: 60
 --- !u!4 &835609601
 Transform:
@@ -853,9 +853,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c87899ed74a1a3b4e8d0737c17b73531, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  acceleration: 100
+  acceleration: 150
   maxSpeed: 10
-  stoppingSpeed: 25
+  stoppingSpeed: 30
   airStoppingSpeed: 15
   maxJumpHeight: 5
   minJumpHeight: 1

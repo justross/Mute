@@ -101,8 +101,10 @@ public class PlayerMotor : MonoBehaviour {
         }
 
         CalculateVelocity();
-
-        grounded = (characterController.Move(velocity * Time.deltaTime) & CollisionFlags.Below) !=0;
+        Vector3 movement = new Vector3(velocity.x, 0, velocity.z);
+        movement= Camera.main.transform.parent.TransformDirection(movement);
+        movement.y = velocity.y;
+        grounded = (characterController.Move(movement * Time.deltaTime) & CollisionFlags.Below) !=0;
          //if we became or stayed grounded on this frame, reset the jump counter
         if (grounded)
         {

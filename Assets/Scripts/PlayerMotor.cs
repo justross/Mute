@@ -20,7 +20,7 @@ public class PlayerMotor : MonoBehaviour {
     // Time in ms the player has when falling that they can still do a full double jump
     public int ledgeForgivenessTime = 120;
 
-    public Vector3 velocity = Vector3.zero;
+    private Vector3 velocity;
 
     private bool grounded = false;
     private Vector3 move = Vector3.zero;
@@ -44,15 +44,14 @@ public class PlayerMotor : MonoBehaviour {
         inputX = Input.GetAxisRaw("Horizontal");
         inputY = Input.GetAxisRaw("Vertical");
 
+        Vector2 input = new Vector2(inputX, inputY);
+
         //Calculate our physics constants for this frame
         gravity = (2 * maxJumpHeight) / Mathf.Pow(maxJumpTime, 2);
         jumpVelocity = Mathf.Sqrt(2 * gravity * maxJumpHeight);
 
         //Calculate the downward velocity needed to exit a jump early. 
         velocityJumpTermination = Mathf.Sqrt(Mathf.Pow(jumpVelocity, 2) + (2 * -gravity) * (maxJumpHeight - minJumpHeight));
-
-        // If both horizontal and vertical are used simultaneously, limit speed (if allowed), so the total doesn't exceed normal move speed
-        float inputModifyFactor = (inputX != 0.0f && inputY != 0.0f) ? .7071f : 1.0f;
 
         if (!grounded)
         {
@@ -68,8 +67,8 @@ public class PlayerMotor : MonoBehaviour {
 
             if (airControl)
             {
-                move.x = ((inputX * airControlFactor) * acceleration * inputModifyFactor);
-                move.z = ((inputY * airControlFactor) * acceleration * inputModifyFactor);
+                move.x = ((inputX * airControlFactor) * acceleration);
+                move.z = ((inputY * airControlFactor) * acceleration);
             }
             
             if (Input.GetButtonUp("Jump") && move.y > 0)
@@ -89,8 +88,8 @@ public class PlayerMotor : MonoBehaviour {
         else
         {
             CalculateDrag();
-            move.x = (inputX * acceleration * inputModifyFactor);
-            move.z = (inputY * acceleration * inputModifyFactor);
+            move.x = (inputX * acceleration);
+            move.z = (inputY * acceleration);
             move.y = -0.75f;
             if (Input.GetButtonDown("Jump"))
             {
@@ -113,7 +112,19 @@ public class PlayerMotor : MonoBehaviour {
         }
 
     }
+    
+    // gets the world-relative velocity of the player;
+    public Vector3 GetVelocity()
+    {
+        return velocity;
+    }
 
+    // gets the world-relative velocity of the player;
+    public Vector3 SetVelocity(Vector3 newVelocity)
+    {
+        velocity = newVelocity;
+        return velocity;
+    }
 
     void CalculateVelocity()
     {
@@ -132,11 +143,11 @@ public class PlayerMotor : MonoBehaviour {
 
         if (inputX == 0)
         {
-            if (velocity.x > 0.1f)
+            if (velocity.x > 0.25f)
             {
                 velocity.x -= drag * Time.deltaTime;
             }
-            else if (velocity.x < -0.1f)
+            else if (velocity.x < -0.25f)
             {
                 velocity.x += drag * Time.deltaTime;
             }
@@ -148,11 +159,11 @@ public class PlayerMotor : MonoBehaviour {
 
         if(inputY == 0)
         {
-            if (velocity.z > 0.1f)
+            if (velocity.z > 0.25f)
             {
                 velocity.z -= drag * Time.deltaTime;
             }
-            else if (velocity.z < -0.1f)
+            else if (velocity.z < -0.25f)
             {
                 velocity.z += drag * Time.deltaTime;
             }

@@ -35,10 +35,10 @@ public class FollowCamera : MonoBehaviour {
         transform.localRotation = Quaternion.Slerp(transform.localRotation, Quaternion.Euler(newRot), Time.deltaTime * rotateDamping);
 
         // update rotation of camera
-        Vector3 camRot = cam.transform.localRotation.eulerAngles;
+        Vector3 camRot = cam.transform.rotation.eulerAngles;
         Quaternion newCamRot = Quaternion.LookRotation(target.position - cam.transform.position, transform.up);
         camRot.x = Mathf.Lerp(camRot.x, newCamRot.eulerAngles.x, rotateDamping * Time.deltaTime);
-        cam.transform.localRotation = Quaternion.Euler(camRot);
+        cam.transform.rotation = Quaternion.Euler(camRot);
         
         //update position of camera rig
         newPos = transform.position;

@@ -8,24 +8,32 @@ public class FollowCamera : MonoBehaviour {
     public float followDistance = 7f;
     public float followHeight = 5f;
     public float moveSpeed = 10f;
-    public float rotateSpeed = 10f;
-    public float camRotSpeed = 5f;
+    public float rotateSensitivity = 10f;
+    public float rotateDamping = 50f;
+    public float maxRotate = 60;
     private Vector3 offset;
-
+    private Camera cam;
     private Vector3 newPos = Vector3.zero;
-
-	// Use this for initialization
-	void Start () {
-        newPos = new Vector3(target.position.x, target.position.y + followHeight, target.position.z - followDistance);
-	}
+    private Vector3 newRot;
+    // Use this for initialization
+    void Start () {
+        newPos = new Vector3(target.position.x, target.position.y, target.position.z);
+        newRot = transform.localRotation.eulerAngles;
+        offset = new Vector3(0 , followHeight, -followDistance);
+        cam = GetComponentInChildren<Camera>();
+        cam.transform.localPosition = offset;
+    }
 	
 	// Update is called once per frame
 	void LateUpdate () {
-        newPos = Quaternion.AngleAxis(Input.GetAxis("Joy X") * camRotSpeed, Vector3.up) * newPos;
-        newPos = Quaternion.AngleAxis(Input.GetAxis("Joy Y") * camRotSpeed, Vector3.left) * newPos;
 
-        transform.position = target.position + newPos;
+        newRot.x += Input.GetAxis("Joy Y") * rotateSensitivity;
+        newRot.y += Input.GetAxis("Joy X") * rotateSensitivity;
+        newRot.z = 0;
+        newRot.x = Mathf.Clamp(newRot.x, -maxRotate, maxRotate);
 
-        transform.LookAt(target.position);
+        transform.localRotation = Quaternion.Slerp(transform.localRotation, Quaternion.Euler(newRot), Time.deltaTime * rotateDamping);
+        transform.position = Vector3.Lerp(transform.position, target.position, Time.deltaTime * moveSpeed);
+
     }
 }

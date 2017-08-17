@@ -805,7 +805,8 @@ MonoBehaviour:
   target: {fileID: 1209891260}
   followDistance: 7
   followHeight: 5
-  moveSpeed: 5
+  moveSpeed: 7.5
+  verticalMoveSpeed: 2.5
   rotateSensitivity: 2.25
   rotateDamping: 75
   maxRotate: 60

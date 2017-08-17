@@ -8,6 +8,7 @@ public class FollowCamera : MonoBehaviour {
     public float followDistance = 7f;
     public float followHeight = 5f;
     public float moveSpeed = 10f;
+    public float verticalMoveSpeed = 5f;
     public float rotateSensitivity = 10f;
     public float rotateDamping = 50f;
     public float maxRotate = 60;
@@ -26,14 +27,25 @@ public class FollowCamera : MonoBehaviour {
 	
 	// Update is called once per frame
 	void LateUpdate () {
-
+        // update rotation of camera rig
         newRot.x += Input.GetAxis("Joy Y") * rotateSensitivity;
         newRot.y += Input.GetAxis("Joy X") * rotateSensitivity;
         newRot.z = 0;
         newRot.x = Mathf.Clamp(newRot.x, -maxRotate, maxRotate);
-
         transform.localRotation = Quaternion.Slerp(transform.localRotation, Quaternion.Euler(newRot), Time.deltaTime * rotateDamping);
-        transform.position = Vector3.Lerp(transform.position, target.position, Time.deltaTime * moveSpeed);
+
+        // update rotation of camera
+        Quaternion camRot = cam.transform.localRotation;
+        Quaternion newCamRot = Quaternion.LookRotation(target.position - cam.transform.position, Vector3.up);
+        camRot.x = Mathf.Lerp(camRot.x, newCamRot.x, rotateDamping * Time.deltaTime);
+        cam.transform.localRotation = camRot;
+        
+        //update position of camera rig
+        newPos = transform.position;
+        newPos.x = Mathf.Lerp(newPos.x, target.position.x, Time.deltaTime * moveSpeed);
+        newPos.y = Mathf.Lerp(newPos.y, target.position.y, Time.deltaTime * verticalMoveSpeed);
+        newPos.z = Mathf.Lerp(newPos.z, target.position.z, Time.deltaTime * moveSpeed);
+        transform.position = newPos;
 
     }
 }

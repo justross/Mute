@@ -31,6 +31,8 @@ public class PlayerMotor : MonoBehaviour {
     float gravity = 0;
     float jumpVelocity = 0;
     float velocityJumpTermination = 0;
+    public Transform cameraRig;
+
 
     // Use this for initialization
     void Start () {
@@ -101,9 +103,9 @@ public class PlayerMotor : MonoBehaviour {
 
         CalculateVelocity();
         Vector3 movement = new Vector3(velocity.x, 0, velocity.z);
-        movement= Camera.main.transform.parent.TransformDirection(movement);
+        movement = cameraRig.TransformDirection(movement);
         movement.y = velocity.y;
-        grounded = (characterController.Move(movement * Time.deltaTime) & CollisionFlags.Below) !=0;
+        grounded = (characterController.Move( movement * Time.deltaTime) & CollisionFlags.Below) !=0;
          //if we became or stayed grounded on this frame, reset the jump counter
         if (grounded)
         {
@@ -112,7 +114,16 @@ public class PlayerMotor : MonoBehaviour {
         }
 
     }
-    
+
+    private Vector3 AlignToVector(Vector3 from, Vector3 to)
+    {
+        Vector3 result = Vector3.zero;
+
+
+
+        return result;
+    }
+
     // gets the world-relative velocity of the player;
     public Vector3 GetVelocity()
     {

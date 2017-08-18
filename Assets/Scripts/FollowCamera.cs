@@ -5,47 +5,78 @@ using UnityEngine;
 public class FollowCamera : MonoBehaviour {
 
     public Transform target;
+    
     public float followDistance = 7f;
     public float followHeight = 5f;
-    public float moveSpeed = 10f;
-    public float verticalMoveSpeed = 5f;
+    public float followSpeed = 10f;
+    public float verticalFollowSpeed = 5f;
     public float rotateSensitivity = 10f;
     public float rotateDamping = 50f;
-    public float maxRotate = 60;
+    public float yMinLimit = -80f;
+    public float yMaxLimit = 80f;
+
     private Vector3 offset;
-    private Camera cam;
+    private new Camera camera;
     private Vector3 newPos = Vector3.zero;
-    private Vector3 newRot;
+    private float newPitch;
+    private float newYaw;
+    float velocityX = 0.0f;
+    float velocityY = 0.0f;
+    float rotationYAxis = 0.0f;
+    float rotationXAxis = 0.0f;
+    
     // Use this for initialization
     void Start () {
         newPos = new Vector3(target.position.x, target.position.y, target.position.z);
-        newRot = transform.localRotation.eulerAngles;
-        offset = new Vector3(0 , followHeight, -followDistance);
-        cam = GetComponentInChildren<Camera>();
-        cam.transform.localPosition = offset;
+        camera = GetComponentInChildren<Camera>();
+
+        Vector3 angles = transform.eulerAngles;
+        rotationYAxis = (rotationYAxis == 0) ? angles.y : rotationYAxis;
+        rotationXAxis = angles.x;
     }
 	
 	// Update is called once per frame
 	void LateUpdate () {
-        // update rotation of camera rig
-        newRot.x += Input.GetAxis("Joy Y") * rotateSensitivity;
-        newRot.y += Input.GetAxis("Joy X") * rotateSensitivity;
-        newRot.z = 0;
-        newRot.x = Mathf.Clamp(newRot.x, -maxRotate, maxRotate);
-        transform.localRotation = Quaternion.Slerp(transform.localRotation, Quaternion.Euler(newRot), Time.deltaTime * rotateDamping);
 
-        // update rotation of camera
-        Vector3 camRot = cam.transform.rotation.eulerAngles;
-        Quaternion newCamRot = Quaternion.LookRotation(target.position - cam.transform.position, transform.up);
-        camRot.x = Mathf.Lerp(camRot.x, newCamRot.eulerAngles.x, rotateDamping * Time.deltaTime);
-        cam.transform.rotation = Quaternion.Euler(camRot);
-        
         // update position of camera rig
         newPos = transform.position;
-        newPos.x = Mathf.Lerp(newPos.x, target.position.x, Time.deltaTime * moveSpeed);
-        newPos.y = Mathf.Lerp(newPos.y, target.position.y, Time.deltaTime * verticalMoveSpeed);
-        newPos.z = Mathf.Lerp(newPos.z, target.position.z, Time.deltaTime * moveSpeed);
+        newPos.x = Mathf.Lerp(newPos.x, target.position.x, Time.deltaTime * followSpeed);
+        newPos.y = Mathf.Lerp(newPos.y, target.position.y, Time.deltaTime * verticalFollowSpeed);
+        newPos.z = Mathf.Lerp(newPos.z, target.position.z, Time.deltaTime * followSpeed);
         transform.position = newPos;
 
+        // update rotation of camera
+        newYaw = Input.GetAxis("Joy Y") * rotateSensitivity * Time.deltaTime;
+        newPitch = Input.GetAxis("Joy X") * rotateSensitivity * Time.deltaTime;
+        velocityY += newYaw;
+        velocityX += newPitch;
+        rotationYAxis += velocityX;
+        rotationXAxis += velocityY;
+        rotationXAxis = ClampAngle(rotationXAxis, yMinLimit, yMaxLimit);
+        Quaternion toRotation = Quaternion.Euler(rotationXAxis, 0, 0);
+        Quaternion rotation = toRotation;
+
+        Quaternion toPitch = Quaternion.Euler(0, rotationYAxis, 0);
+        Quaternion pitch = toPitch;
+
+        Vector3 negDistance = new Vector3(0.0f, followHeight , -followDistance);
+        Vector3 position = rotation * negDistance;
+        camera.transform.localRotation = rotation;
+        camera.transform.localPosition = position;
+        transform.localRotation = pitch;
+
+
+        velocityX = Mathf.Lerp(velocityX, 0, Time.deltaTime * rotateDamping);
+        velocityY = Mathf.Lerp(velocityY, 0, Time.deltaTime * rotateDamping);
+
+    }
+
+    public static float ClampAngle(float angle, float min, float max)
+    {
+        if (angle < -360F)
+            angle += 360F;
+        if (angle > 360F)
+            angle -= 360F;
+        return Mathf.Clamp(angle, min, max);
     }
 }

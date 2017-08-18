@@ -15,7 +15,7 @@ public class PlayerAnimator : MonoBehaviour {
 	void Update () {
 
         Vector3 direction = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
-        direction = Camera.main.transform.parent.TransformDirection(direction);
+        direction = playerMotor.cameraRig.TransformDirection(direction);
         Quaternion rotation = Quaternion.LookRotation(direction, Vector3.up);
         if (direction.magnitude > 0.1f)
             transform.rotation = Quaternion.Slerp(transform.rotation, rotation, rotationDamping * Time.deltaTime);

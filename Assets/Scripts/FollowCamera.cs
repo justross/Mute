@@ -17,6 +17,7 @@ public class FollowCamera : MonoBehaviour {
 
     private Vector3 offset;
     private new Camera camera;
+    private Vector3 camMask;
     private Vector3 newPos = Vector3.zero;
     private float newPitch;
     private float newYaw;
@@ -24,7 +25,10 @@ public class FollowCamera : MonoBehaviour {
     float velocityY = 0.0f;
     float rotationYAxis = 0.0f;
     float rotationXAxis = 0.0f;
-    
+
+    [Header("Layer(s) to include")]
+    public LayerMask camOcclusion;
+
     // Use this for initialization
     void Start () {
         newPos = new Vector3(target.position.x, target.position.y, target.position.z);
@@ -43,7 +47,6 @@ public class FollowCamera : MonoBehaviour {
         newPos.x = Mathf.Lerp(newPos.x, target.position.x, Time.deltaTime * followSpeed);
         newPos.y = Mathf.Lerp(newPos.y, target.position.y, Time.deltaTime * verticalFollowSpeed);
         newPos.z = Mathf.Lerp(newPos.z, target.position.z, Time.deltaTime * followSpeed);
-        transform.position = newPos;
 
         // update rotation of camera
         newYaw = Input.GetAxis("Joy Y") * rotateSensitivity * Time.deltaTime;
@@ -55,6 +58,24 @@ public class FollowCamera : MonoBehaviour {
         rotationXAxis = ClampAngle(rotationXAxis, yMinLimit, yMaxLimit);
         Quaternion toRotation = Quaternion.Euler(rotationXAxis, 0, 0);
         Quaternion rotation = toRotation;
+
+        // determine where camera should move
+        Vector3 targetOffset = target.position;
+        RaycastHit wallHit = new RaycastHit();
+        if (Physics.Linecast(target.position, camera.transform.position, out wallHit, camOcclusion))
+        {
+            Debug.Log(wallHit.collider);
+
+            //the x and z coordinates are pushed away from the wall by hit.normal.
+            //the y coordinate stays the same.
+            Vector3 oldPos = newPos;
+            //newPos = new Vector3(wallHit.point.x + wallHit.normal.x, newPos.y, wallHit.point.z + wallHit.normal.z);
+            //newPos = new Vector3(newPos.x * .95f, newPos.y, newPos.z *.95f);
+            newPos = new Vector3(wallHit.point.x, newPos.y, wallHit.point.z);
+            //Debug.Log(oldPos + " " + newPos);
+            Debug.Log(wallHit.point.x + " "+ wallHit.point.z + "  " + camera.transform.position.x + " " + camera.transform.position.z + "  " + transform.position.x + " " + transform.position.z);
+        }
+        transform.position = newPos;
 
         Quaternion toPitch = Quaternion.Euler(0, rotationYAxis, 0);
         Quaternion pitch = toPitch;

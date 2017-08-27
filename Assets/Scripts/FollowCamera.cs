@@ -48,19 +48,7 @@ public class FollowCamera : MonoBehaviour {
         newPos.y = Mathf.Lerp(newPos.y, target.position.y, Time.deltaTime * verticalFollowSpeed);
         newPos.z = Mathf.Lerp(newPos.z, target.position.z, Time.deltaTime * followSpeed);
 
-        // update rotation of camera
-        newYaw = Input.GetAxis("Joy Y") * rotateSensitivity * Time.deltaTime;
-        newPitch = Input.GetAxis("Joy X") * rotateSensitivity * Time.deltaTime;
-        velocityY += newYaw;
-        velocityX += newPitch;
-        rotationYAxis += velocityX;
-        rotationXAxis += velocityY;
-        rotationXAxis = ClampAngle(rotationXAxis, yMinLimit, yMaxLimit);
-        Quaternion toRotation = Quaternion.Euler(rotationXAxis, 0, 0);
-        Quaternion rotation = toRotation;
-
-        // determine where camera should move
-        Vector3 targetOffset = target.position;
+        // determine where camera rig should move
         RaycastHit wallHit = new RaycastHit();
         if (Physics.Linecast(target.position, camera.transform.position, out wallHit, camOcclusion))
         {
@@ -71,20 +59,30 @@ public class FollowCamera : MonoBehaviour {
             Vector3 oldPos = newPos;
             //newPos = new Vector3(wallHit.point.x + wallHit.normal.x, newPos.y, wallHit.point.z + wallHit.normal.z);
             //newPos = new Vector3(newPos.x * .95f, newPos.y, newPos.z *.95f);
-            newPos = new Vector3(wallHit.point.x, newPos.y, wallHit.point.z);
+            newPos = new Vector3(Mathf.Lerp(newPos.x, wallHit.point.x, Time.deltaTime * followSpeed), newPos.y, Mathf.Lerp(newPos.x, wallHit.point.z, Time.deltaTime * followSpeed));
             //Debug.Log(oldPos + " " + newPos);
-            Debug.Log(wallHit.point.x + " "+ wallHit.point.z + "  " + camera.transform.position.x + " " + camera.transform.position.z + "  " + transform.position.x + " " + transform.position.z);
         }
         transform.position = newPos;
 
+
+        // update rotation of camera
+        newYaw = Input.GetAxis("Joy Y") * rotateSensitivity * Time.deltaTime;
+        newPitch = Input.GetAxis("Joy X") * rotateSensitivity * Time.deltaTime;
+        velocityY += newYaw;
+        velocityX += newPitch;
+        rotationYAxis += velocityX;
+        rotationXAxis += velocityY;
+        rotationXAxis = ClampAngle(rotationXAxis, yMinLimit, yMaxLimit);
+        Quaternion toRotation = Quaternion.Euler(rotationXAxis, 0, 0);
         Quaternion toPitch = Quaternion.Euler(0, rotationYAxis, 0);
         Quaternion pitch = toPitch;
 
         Vector3 negDistance = new Vector3(0.0f, followHeight , -followDistance);
-        Vector3 position = rotation * negDistance;
-        camera.transform.localRotation = rotation;
+        Vector3 position = toRotation * negDistance;
+        camera.transform.localRotation = toRotation;
         camera.transform.localPosition = position;
         transform.localRotation = pitch;
+        Debug.Log(wallHit.point.x + " "+ wallHit.point.z + "  " + camera.transform.position.x + " " + camera.transform.position.z + "  " + camera.transform.localPosition.x + " " + camera.transform.localPosition.z + "  " + transform.position.x + " " + transform.position.z);
 
 
         velocityX = Mathf.Lerp(velocityX, 0, Time.deltaTime * rotateDamping);

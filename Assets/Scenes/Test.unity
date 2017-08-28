@@ -328,7 +328,7 @@ GameObject:
   - component: {fileID: 352163361}
   - component: {fileID: 352163360}
   - component: {fileID: 352163359}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Sphere (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -516,7 +516,7 @@ GameObject:
   - component: {fileID: 666374933}
   - component: {fileID: 666374932}
   - component: {fileID: 666374931}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Sphere
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -777,6 +777,7 @@ MonoBehaviour:
   rotateDamping: 20
   yMinLimit: -60
   yMaxLimit: 60
+  cameraState: 0
   camOcclusion:
     serializedVersion: 2
     m_Bits: 4294967035
@@ -965,7 +966,7 @@ GameObject:
   - component: {fileID: 1209891260}
   - component: {fileID: 1209891257}
   - component: {fileID: 1209891256}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1174,7 +1175,7 @@ SphereCollider:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1452397735}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.5
@@ -1387,7 +1388,7 @@ GameObject:
   - component: {fileID: 1875153701}
   - component: {fileID: 1875153700}
   - component: {fileID: 1875153702}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: PlayerModel
   m_TagString: Untagged
   m_Icon: {fileID: 0}

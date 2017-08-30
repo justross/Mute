@@ -10,7 +10,6 @@ public class FollowCamera : MonoBehaviour
     public float followDistance = 7f;
     public float followHeight = 5f;
     public float followSpeed = 10f;
-    public float centeringSpeed = 10f;
     public float verticalFollowSpeed = 5f;
     public float rotateSensitivity = 10f;
     public float rotateDamping = 50f;
@@ -27,6 +26,8 @@ public class FollowCamera : MonoBehaviour
     float velocityY = 0.0f;
     float rotationYAxis = 0.0f;
     float rotationXAxis = 0.0f;
+    private float centeringAcceleration = .5f;
+    private float centeringSpeed = 0f;
 
 
     public enum CameraState
@@ -54,36 +55,37 @@ public class FollowCamera : MonoBehaviour
     // Update is called once per frame
     void LateUpdate()
     {
-        if (Input.GetButton("Cam Center"))
+        if (Input.GetButtonDown("Cam Center"))
         {
             cameraState = CameraState.centering;
+            centeringSpeed = 0f;
         }
 
         switch (cameraState)
         {
             case CameraState.centering:
                 transform.forward = target.GetChild(0).forward;
-                rotationXAxis = camera.transform.localRotation.eulerAngles.x;
-                rotationYAxis = transform.localRotation.eulerAngles.y;
-                cameraState = CameraState.idle;
+                centeringSpeed += centeringAcceleration;
+                rotationYAxis = Mathf.Lerp(rotationYAxis, transform.localRotation.eulerAngles.y, centeringSpeed);
+                if(Mathf.Abs(rotationYAxis - transform.localRotation.eulerAngles.y) < 1)
+                {
+                    cameraState = CameraState.idle;
+                }
                 break;
 
             case CameraState.idle:
-                // update position of camera rig
-                newPos = transform.position;
-                newPos.x = Mathf.Lerp(newPos.x, target.position.x, Time.deltaTime * followSpeed);
-                newPos.y = Mathf.Lerp(newPos.y, target.position.y, Time.deltaTime * verticalFollowSpeed);
-                newPos.z = Mathf.Lerp(newPos.z, target.position.z, Time.deltaTime * followSpeed);
-                transform.position = newPos;
-
-                // update rotation of camera
-                newYaw = Input.GetAxis("Joy Y") * rotateSensitivity * Time.deltaTime;
-                newPitch = Input.GetAxis("Joy X") * rotateSensitivity * Time.deltaTime;
-                velocityY += newYaw;
-                velocityX += newPitch;
-
+                // update rotation of camera based on user input
+                velocityY += Input.GetAxis("Joy Y") * rotateSensitivity * Time.deltaTime;
+                velocityX += Input.GetAxis("Joy X") * rotateSensitivity * Time.deltaTime;
                 break;
         }
+
+        // update position of camera rig
+        newPos = transform.position;
+        newPos.x = Mathf.Lerp(newPos.x, target.position.x, Time.deltaTime * followSpeed);
+        newPos.y = Mathf.Lerp(newPos.y, target.position.y, Time.deltaTime * verticalFollowSpeed);
+        newPos.z = Mathf.Lerp(newPos.z, target.position.z, Time.deltaTime * followSpeed);
+        transform.position = newPos;
 
         rotationYAxis += velocityX;
         rotationXAxis += velocityY;
@@ -104,9 +106,9 @@ public class FollowCamera : MonoBehaviour
             Vector3 absPosition = new Vector3(wallHit.point.x + wallHit.normal.x, wallHit.point.y + wallHit.normal.y, wallHit.point.z + wallHit.normal.z);
             camera.transform.position = absPosition;
         }
+
         velocityX = Mathf.Lerp(velocityX, 0, Time.deltaTime * rotateDamping);
         velocityY = Mathf.Lerp(velocityY, 0, Time.deltaTime * rotateDamping);
-
 
     }
 

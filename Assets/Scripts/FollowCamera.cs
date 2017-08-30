@@ -10,6 +10,7 @@ public class FollowCamera : MonoBehaviour
     public float followDistance = 7f;
     public float followHeight = 5f;
     public float followSpeed = 10f;
+    public float centeringSpeed = 10f;
     public float verticalFollowSpeed = 5f;
     public float rotateSensitivity = 10f;
     public float rotateDamping = 50f;
@@ -53,14 +54,24 @@ public class FollowCamera : MonoBehaviour
     // Update is called once per frame
     void LateUpdate()
     {
-
+        if(Input.GetButton("Cam Center"))
+        {
+            cameraState = CameraState.centering;
+        }
+        Debug.Log(transform.rotation);
         switch (cameraState)
         {
             case CameraState.centering:
-                Debug.Log("okay");
+                transform.forward = target.GetChild(0).forward;
+
+                //newPos.x = Mathf.Lerp(transform.forward.x, target.GetChild(0).forward.x, Time.deltaTime * centeringSpeed);
+                //newPos.z = Mathf.Lerp(transform.forward.z, target.GetChild(0).forward.z, Time.deltaTime * centeringSpeed);
+                //transform.forward = newPos;
+                //if(newPos.x == target.GetChild(0).forward.x && newPos.z == target.GetChild(0).forward.z)
+                cameraState = CameraState.idle;
                 break;
 
-            default:
+            case CameraState.idle:
                 // update position of camera rig
                 newPos = transform.position;
                 newPos.x = Mathf.Lerp(newPos.x, target.position.x, Time.deltaTime * followSpeed);

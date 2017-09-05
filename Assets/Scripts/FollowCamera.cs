@@ -6,6 +6,7 @@ public class FollowCamera : MonoBehaviour
 {
 
     public Transform target;
+    private Transform targetHead;
 
     public float followDistance = 7f;
     public float followHeight = 5f;
@@ -13,8 +14,19 @@ public class FollowCamera : MonoBehaviour
     public float verticalFollowSpeed = 5f;
     public float rotateSensitivity = 10f;
     public float rotateDamping = 50f;
+
+    // y Limit for default camera view
     public float yMinLimit = -80f;
     public float yMaxLimit = 80f;
+
+    // limits for aiming camera view
+    private float aimXMinLimit = -80f;
+    private float aimXMaxLimit = 80f;
+    private float aimYMinLimit = -80f;
+    private float aimYMaxLimit = 80f;
+
+    // lerp speed for moving camera into/out of aiming mode position
+    private float aimPosSpeed = 5f;
 
     private Vector3 offset;
     private new Camera camera;
@@ -50,6 +62,8 @@ public class FollowCamera : MonoBehaviour
     {
         newPos = new Vector3(target.position.x, target.position.y, target.position.z);
         camera = GetComponentInChildren<Camera>();
+
+        targetHead = target.Find("Head");
 
         Vector3 angles = transform.eulerAngles;
         rotationYAxis = (rotationYAxis == 0) ? angles.y : rotationYAxis;
@@ -93,7 +107,36 @@ public class FollowCamera : MonoBehaviour
                 calculateRotation();
                 checkWalls();
                 break;
+
             case CameraState.aiming:
+                calculatePosition();
+
+                velocityY += Input.GetAxis("Joy Y") * rotateSensitivity * .8f * Time.deltaTime;
+                velocityX += Input.GetAxis("Joy X") * rotateSensitivity * .8f * Time.deltaTime;
+                rotationYAxis += velocityX;
+                rotationXAxis += velocityY;
+                rotationXAxis = ClampAngle(rotationXAxis, aimXMinLimit, aimXMaxLimit);
+                Quaternion rotation = Quaternion.Euler(rotationXAxis, rotationYAxis, 0);
+                Quaternion pitch = Quaternion.Euler(0, rotationYAxis, 0);
+
+                camera.transform.rotation = rotation;
+                transform.localRotation = pitch;
+
+                velocityX = Mathf.Lerp(velocityX, 0, Time.deltaTime * rotateDamping);
+                velocityY = Mathf.Lerp(velocityY, 0, Time.deltaTime * rotateDamping);
+
+                // How much the camera is angled above or below 0. If it's as high or as low as it can be the value will be 0. If it's not above or below at all it will be 1.
+                float viewAnglePercentage = 1 - Mathf.Clamp(camera.transform.localEulerAngles.x > 180 ? 360 - camera.transform.localEulerAngles.x : camera.transform.localEulerAngles.x, aimXMinLimit, aimXMaxLimit) / aimXMaxLimit;
+
+                // Over the shoulder position with an offset based on how high or low the camera is looking.
+                Vector3 aimingPosition = targetHead.position - (transform.forward * 5f * viewAnglePercentage) + (targetHead.up * .65f * viewAnglePercentage);
+
+                aimingPosition.x = Mathf.Lerp(camera.transform.position.x, aimingPosition.x, Time.deltaTime * aimPosSpeed);
+                aimingPosition.y = Mathf.Lerp(camera.transform.position.y, aimingPosition.y, Time.deltaTime * aimPosSpeed);
+                aimingPosition.z = Mathf.Lerp(camera.transform.position.z, aimingPosition.z, Time.deltaTime * aimPosSpeed);
+                camera.transform.position = aimingPosition;
+
+                checkWalls();
                 break;
 
             case CameraState.idle:
@@ -114,6 +157,8 @@ public class FollowCamera : MonoBehaviour
 
         // shows crosshair if aiming
         crosshair.SetActive(cameraState == CameraState.aiming);
+
+        Debug.Log(cameraState);
     }
 
 

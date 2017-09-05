@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerMotor : MonoBehaviour {
+public class PlayerMotor : MonoBehaviour
+{
 
     public float acceleration = 3;
     public float maxSpeed = 10;
@@ -15,7 +16,6 @@ public class PlayerMotor : MonoBehaviour {
     public bool airControl = true;
     [Range(0, 1)]
     public float airControlFactor = 0.75f;
-    
 
     // Time in ms the player has when falling that they can still do a full double jump
     public int ledgeForgivenessTime = 120;
@@ -32,17 +32,21 @@ public class PlayerMotor : MonoBehaviour {
     float jumpVelocity = 0;
     float velocityJumpTermination = 0;
     public Transform cameraRig;
+    private FollowCamera followCamera;
 
 
     // Use this for initialization
-    void Start () {
+    void Start()
+    {
         characterController = GetComponent<CharacterController>();
-	}
+        followCamera = cameraRig.gameObject.GetComponent<FollowCamera>();
+    }
 
 
     float timer = 0;
-	// Update is called once per frame
-	void Update () {
+    // Update is called once per frame
+    void Update()
+    {
         inputX = Input.GetAxisRaw("Horizontal");
         inputY = Input.GetAxisRaw("Vertical");
 
@@ -62,7 +66,7 @@ public class PlayerMotor : MonoBehaviour {
 
             timer += 1000 * Time.deltaTime;
             move.y -= gravity * Time.deltaTime;
-            if(timer >= ledgeForgivenessTime && jumpCounter < 1)
+            if (timer >= ledgeForgivenessTime && jumpCounter < 1)
             {
                 jumpCounter++;
             }
@@ -72,7 +76,7 @@ public class PlayerMotor : MonoBehaviour {
                 move.x = ((inputX * airControlFactor) * acceleration);
                 move.z = ((inputY * airControlFactor) * acceleration);
             }
-            
+
             if (Input.GetButtonUp("Jump") && move.y > 0)
             {
                 //choose the minimum between the exit velocity and current upward velocity
@@ -81,7 +85,7 @@ public class PlayerMotor : MonoBehaviour {
 
             if (Input.GetButtonDown("Jump") && jumpCounter < jumpCount)
             {
-                
+
                 move.y = jumpVelocity;
                 jumpCounter++;
             }
@@ -98,15 +102,19 @@ public class PlayerMotor : MonoBehaviour {
                 move.y = jumpVelocity;
                 jumpCounter++;
             }
-            
+
         }
 
         CalculateVelocity();
         Vector3 movement = new Vector3(velocity.x, 0, velocity.z);
         movement = cameraRig.TransformDirection(movement);
         movement.y = velocity.y;
-        grounded = (characterController.Move( movement * Time.deltaTime) & CollisionFlags.Below) !=0;
-         //if we became or stayed grounded on this frame, reset the jump counter
+        if (followCamera.cameraState == FollowCamera.CameraState.aiming)
+        {
+            transform.GetChild(0).forward = cameraRig.GetComponentInChildren<Camera>().transform.forward;
+        }
+        grounded = (characterController.Move(movement * Time.deltaTime) & CollisionFlags.Below) != 0;
+        //if we became or stayed grounded on this frame, reset the jump counter
         if (grounded)
         {
             jumpCounter = 0;
@@ -168,7 +176,7 @@ public class PlayerMotor : MonoBehaviour {
             }
         }
 
-        if(inputY == 0)
+        if (inputY == 0)
         {
             if (velocity.z > 0.25f)
             {

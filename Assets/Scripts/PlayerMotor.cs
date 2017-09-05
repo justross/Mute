@@ -109,10 +109,6 @@ public class PlayerMotor : MonoBehaviour
         Vector3 movement = new Vector3(velocity.x, 0, velocity.z);
         movement = cameraRig.TransformDirection(movement);
         movement.y = velocity.y;
-        if (followCamera.cameraState == FollowCamera.CameraState.aiming)
-        {
-            transform.GetChild(0).forward = cameraRig.GetComponentInChildren<Camera>().transform.forward;
-        }
         grounded = (characterController.Move(movement * Time.deltaTime) & CollisionFlags.Below) != 0;
         //if we became or stayed grounded on this frame, reset the jump counter
         if (grounded)
@@ -120,10 +116,19 @@ public class PlayerMotor : MonoBehaviour
             jumpCounter = 0;
             timer = 0;
         }
-
+        
     }
 
-    private Vector3 AlignToVector(Vector3 from, Vector3 to)
+    private void LateUpdate()
+    {
+        if (followCamera.cameraState == FollowCamera.CameraState.aiming)
+        {
+            transform.GetChild(0).forward = cameraRig.GetComponentInChildren<Camera>().transform.forward;
+
+        }
+
+    }
+        private Vector3 AlignToVector(Vector3 from, Vector3 to)
     {
         Vector3 result = Vector3.zero;
 

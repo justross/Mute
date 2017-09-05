@@ -111,6 +111,7 @@ public class FollowCamera : MonoBehaviour
             case CameraState.aiming:
                 calculatePosition();
 
+                // Calculate rotation
                 velocityY += Input.GetAxis("Joy Y") * rotateSensitivity * .8f * Time.deltaTime;
                 velocityX += Input.GetAxis("Joy X") * rotateSensitivity * .8f * Time.deltaTime;
                 rotationYAxis += velocityX;
@@ -136,6 +137,7 @@ public class FollowCamera : MonoBehaviour
                 aimingPosition.z = Mathf.Lerp(camera.transform.position.z, aimingPosition.z, Time.deltaTime * aimPosSpeed);
                 camera.transform.position = aimingPosition;
 
+
                 checkWalls();
                 break;
 
@@ -157,8 +159,6 @@ public class FollowCamera : MonoBehaviour
 
         // shows crosshair if aiming
         crosshair.SetActive(cameraState == CameraState.aiming);
-
-        Debug.Log(cameraState);
     }
 
 

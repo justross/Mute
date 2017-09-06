@@ -5,14 +5,17 @@ using UnityEngine;
 public class Grapple : MonoBehaviour
 {
     public Transform cameraRig;
+    public Transform player;
 
     private GameObject grappleTarget;
     private FollowCamera cameraScript;
+    private PlayerMotor playerMotorScript;
 
     // Use this for initialization
     void Start()
     {
         cameraScript = cameraRig.gameObject.GetComponent<FollowCamera>();
+        playerMotorScript = player.gameObject.GetComponent<PlayerMotor>();
     }
 
     // Update is called once per frame
@@ -30,8 +33,10 @@ public class Grapple : MonoBehaviour
                 {
                     Vector3 localPoint = Camera.main.transform.InverseTransformPoint(grappleTarget.transform.position).normalized;
                     float test = Vector3.Dot(localPoint, Vector3.forward);
-                    if (test > closestDot)
+                    // The closer test is to one the closer it is to the center of the screen
+                    if (test > closestDot && test > 0.975f)
                     {
+                        Debug.Log(test + " " + closestDot);
                         closestDot = test;
                         closestGrappleTarget = grappleTarget;
                     }
@@ -46,7 +51,7 @@ public class Grapple : MonoBehaviour
 
         if (Input.GetAxis("Grappling") > 0 && grappleTarget != null)
         {
-            Debug.Log("grappling my dude");
+            playerMotorScript.grappleTo(grappleTarget.transform);
         }
     }
 }

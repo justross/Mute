@@ -22,6 +22,14 @@ public class PlayerMotor : MonoBehaviour
 
     private Vector3 velocity;
 
+    public enum MoveState
+    {
+        idle,
+        grappling
+    }
+
+    public MoveState moveState;
+
     private bool grounded = false;
     private Vector3 move = Vector3.zero;
     private float inputX = 0;
@@ -33,6 +41,7 @@ public class PlayerMotor : MonoBehaviour
     float velocityJumpTermination = 0;
     public Transform cameraRig;
     private FollowCamera followCamera;
+    private Transform grappleTarget;
 
 
     // Use this for initialization
@@ -47,79 +56,95 @@ public class PlayerMotor : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        inputX = Input.GetAxisRaw("Horizontal");
-        inputY = Input.GetAxisRaw("Vertical");
-
-        Vector2 input = new Vector2(inputX, inputY);
-
-        //Calculate our physics constants for this frame
-        gravity = (2 * maxJumpHeight) / Mathf.Pow(maxJumpTime, 2);
-        jumpVelocity = Mathf.Sqrt(2 * gravity * maxJumpHeight);
-
-        //Calculate the downward velocity needed to exit a jump early. 
-        velocityJumpTermination = Mathf.Sqrt(Mathf.Pow(jumpVelocity, 2) + (2 * -gravity) * (maxJumpHeight - minJumpHeight));
-
-        if (!grounded)
+        switch (moveState)
         {
+            case MoveState.grappling:
+                if (Input.GetAxis("Aiming") <= 0)
+                {
+                    moveState = MoveState.idle;
+                }
+                else
+                {
+                    characterController.Move(grappleTarget.position - transform.position);
+                }
+                break;
 
-            CalculateDrag();
+            default:
+                inputX = Input.GetAxisRaw("Horizontal");
+                inputY = Input.GetAxisRaw("Vertical");
 
-            timer += 1000 * Time.deltaTime;
-            move.y -= gravity * Time.deltaTime;
-            if (timer >= ledgeForgivenessTime && jumpCounter < 1)
-            {
-                jumpCounter++;
-            }
+                Vector2 input = new Vector2(inputX, inputY);
 
-            if (airControl)
-            {
-                move.x = ((inputX * airControlFactor) * acceleration);
-                move.z = ((inputY * airControlFactor) * acceleration);
-            }
+                //Calculate our physics constants for this frame
+                gravity = (2 * maxJumpHeight) / Mathf.Pow(maxJumpTime, 2);
+                jumpVelocity = Mathf.Sqrt(2 * gravity * maxJumpHeight);
 
-            if (Input.GetButtonUp("Jump") && move.y > 0)
-            {
-                //choose the minimum between the exit velocity and current upward velocity
-                move.y = Mathf.Min(velocityJumpTermination, move.y);
-            }
+                //Calculate the downward velocity needed to exit a jump early. 
+                velocityJumpTermination = Mathf.Sqrt(Mathf.Pow(jumpVelocity, 2) + (2 * -gravity) * (maxJumpHeight - minJumpHeight));
 
-            if (Input.GetButtonDown("Jump") && jumpCounter < jumpCount)
-            {
+                if (!grounded)
+                {
 
-                move.y = jumpVelocity;
-                jumpCounter++;
-            }
+                    CalculateDrag();
 
+                    timer += 1000 * Time.deltaTime;
+                    move.y -= gravity * Time.deltaTime;
+                    if (timer >= ledgeForgivenessTime && jumpCounter < 1)
+                    {
+                        jumpCounter++;
+                    }
+
+                    if (airControl)
+                    {
+                        move.x = ((inputX * airControlFactor) * acceleration);
+                        move.z = ((inputY * airControlFactor) * acceleration);
+                    }
+
+                    if (Input.GetButtonUp("Jump") && move.y > 0)
+                    {
+                        //choose the minimum between the exit velocity and current upward velocity
+                        move.y = Mathf.Min(velocityJumpTermination, move.y);
+                    }
+
+                    if (Input.GetButtonDown("Jump") && jumpCounter < jumpCount)
+                    {
+
+                        move.y = jumpVelocity;
+                        jumpCounter++;
+                    }
+
+                }
+                else
+                {
+                    CalculateDrag();
+                    move.x = (inputX * acceleration);
+                    move.z = (inputY * acceleration);
+                    move.y = -0.75f;
+                    if (Input.GetButtonDown("Jump"))
+                    {
+                        move.y = jumpVelocity;
+                        jumpCounter++;
+                    }
+
+                }
+
+                CalculateVelocity();
+                Vector3 movement = new Vector3(velocity.x, 0, velocity.z);
+                movement = cameraRig.TransformDirection(movement);
+                movement.y = velocity.y;
+                grounded = (characterController.Move(movement * Time.deltaTime) & CollisionFlags.Below) != 0;
+                //if we became or stayed grounded on this frame, reset the jump counter
+                if (grounded)
+                {
+                    jumpCounter = 0;
+                    timer = 0;
+                }
+                break;
         }
-        else
-        {
-            CalculateDrag();
-            move.x = (inputX * acceleration);
-            move.z = (inputY * acceleration);
-            move.y = -0.75f;
-            if (Input.GetButtonDown("Jump"))
-            {
-                move.y = jumpVelocity;
-                jumpCounter++;
-            }
 
-        }
-
-        CalculateVelocity();
-        Vector3 movement = new Vector3(velocity.x, 0, velocity.z);
-        movement = cameraRig.TransformDirection(movement);
-        movement.y = velocity.y;
-        grounded = (characterController.Move(movement * Time.deltaTime) & CollisionFlags.Below) != 0;
-        //if we became or stayed grounded on this frame, reset the jump counter
-        if (grounded)
-        {
-            jumpCounter = 0;
-            timer = 0;
-        }
-        
     }
 
-    private void LateUpdate()
+    void LateUpdate()
     {
         if (followCamera.cameraState == FollowCamera.CameraState.aiming)
         {
@@ -128,7 +153,9 @@ public class PlayerMotor : MonoBehaviour
         }
 
     }
-        private Vector3 AlignToVector(Vector3 from, Vector3 to)
+
+
+    private Vector3 AlignToVector(Vector3 from, Vector3 to)
     {
         Vector3 result = Vector3.zero;
 
@@ -196,6 +223,13 @@ public class PlayerMotor : MonoBehaviour
                 velocity.z = 0;
             }
         }
+    }
+
+    public void grappleTo(Transform target)
+    {
+        grappleTarget = target;
+        moveState = MoveState.grappling;
+
     }
 
 }

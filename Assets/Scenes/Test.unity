@@ -236,6 +236,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cameraRig: {fileID: 835609601}
+  player: {fileID: 1209891260}
 --- !u!1001 &108491748
 Prefab:
   m_ObjectHideFlags: 0
@@ -2253,6 +2254,7 @@ MonoBehaviour:
   airControl: 1
   airControlFactor: 0.66
   ledgeForgivenessTime: 120
+  moveState: 0
   cameraRig: {fileID: 835609601}
 --- !u!143 &1209891257
 CharacterController:

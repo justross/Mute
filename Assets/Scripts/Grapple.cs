@@ -36,7 +36,6 @@ public class Grapple : MonoBehaviour
                     // The closer test is to one the closer it is to the center of the screen
                     if (test > closestDot && test > 0.975f)
                     {
-                        Debug.Log(test + " " + closestDot);
                         closestDot = test;
                         closestGrappleTarget = grappleTarget;
                     }

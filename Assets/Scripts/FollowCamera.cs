@@ -105,6 +105,7 @@ public class FollowCamera : MonoBehaviour
                 }
                 calculatePosition();
                 calculateRotation();
+                calculateCamera();
                 checkWalls();
                 break;
 
@@ -147,12 +148,14 @@ public class FollowCamera : MonoBehaviour
                 velocityX += Input.GetAxis("Joy X") * rotateSensitivity * Time.deltaTime;
                 calculatePosition();
                 calculateRotation();
+                calculateCamera();
                 checkWalls();
                 break;
 
             default:
                 calculatePosition();
                 calculateRotation();
+                calculateCamera();
                 checkWalls();
                 break;
         }
@@ -180,20 +183,29 @@ public class FollowCamera : MonoBehaviour
     private void calculateRotation()
     {
         rotationYAxis += velocityX;
-        rotationXAxis += velocityY;
         rotationXAxis = ClampAngle(rotationXAxis, yMinLimit, yMaxLimit);
-        Quaternion rotation = Quaternion.Euler(rotationXAxis, 0, 0);
         Quaternion pitch = Quaternion.Euler(0, rotationYAxis, 0);
-        Vector3 negDistance = new Vector3(0.0f, followHeight, -followDistance);
-        Vector3 position = rotation * negDistance;
 
-        camera.transform.localRotation = rotation;
-        camera.transform.localPosition = position;
         transform.localRotation = pitch;
-
 
         velocityX = Mathf.Lerp(velocityX, 0, Time.deltaTime * rotateDamping);
         velocityY = Mathf.Lerp(velocityY, 0, Time.deltaTime * rotateDamping);
+    }
+
+    /// <summary>
+    /// Calculates and sets camera orientation
+    /// </summary>
+    private void calculateCamera()
+    {
+        rotationXAxis += velocityY;
+        Quaternion rotation = Quaternion.Euler(rotationXAxis, 0, 0);
+        camera.transform.localRotation = rotation;
+        Vector3 negDistance = new Vector3(0.0f, followHeight, -followDistance);
+        Vector3 position = rotation * negDistance;
+        // position.x = Mathf.Lerp(camera.transform.localPosition.x, position.x, Time.deltaTime * followSpeed);
+        // position.y = Mathf.Lerp(camera.transform.localPosition.y, position.y, Time.deltaTime * followSpeed);
+        // position.z = Mathf.Lerp(camera.transform.localPosition.z, position.z, Time.deltaTime * followSpeed);
+        camera.transform.localPosition = position;
     }
 
     /// <summary>

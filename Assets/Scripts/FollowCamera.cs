@@ -132,12 +132,14 @@ public class FollowCamera : MonoBehaviour
 
                 // Over the shoulder position with an offset based on how high or low the camera is looking.
                 Vector3 aimingPosition = targetHead.position - (transform.forward * 5f * viewAnglePercentage) + (targetHead.up * .65f * viewAnglePercentage);
+                if (!onWall)
+                {
+                    aimingPosition.x = Mathf.Lerp(camera.transform.position.x, aimingPosition.x, Time.deltaTime * aimPosSpeed);
+                    aimingPosition.y = Mathf.Lerp(camera.transform.position.y, aimingPosition.y, Time.deltaTime * aimPosSpeed);
+                    aimingPosition.z = Mathf.Lerp(camera.transform.position.z, aimingPosition.z, Time.deltaTime * aimPosSpeed);                 
+                }
 
-                aimingPosition.x = Mathf.Lerp(camera.transform.position.x, aimingPosition.x, Time.deltaTime * aimPosSpeed);
-                aimingPosition.y = Mathf.Lerp(camera.transform.position.y, aimingPosition.y, Time.deltaTime * aimPosSpeed);
-                aimingPosition.z = Mathf.Lerp(camera.transform.position.z, aimingPosition.z, Time.deltaTime * aimPosSpeed);
                 camera.transform.position = aimingPosition;
-
 
                 checkWalls();
                 break;
@@ -211,6 +213,7 @@ public class FollowCamera : MonoBehaviour
     /// <summary>
     /// Checks if a wall is between where the camera moved and the player
     /// </summary>
+    private bool onWall = false;
     private void checkWalls()
     {
         RaycastHit wallHit = new RaycastHit();
@@ -218,6 +221,11 @@ public class FollowCamera : MonoBehaviour
         {
             Vector3 absPosition = new Vector3(wallHit.point.x + wallHit.normal.x, wallHit.point.y + wallHit.normal.y, wallHit.point.z + wallHit.normal.z);
             camera.transform.position = absPosition;
+            onWall = true;
+        }
+        else
+        {
+            onWall = false;
         }
     }
 

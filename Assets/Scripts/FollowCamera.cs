@@ -38,8 +38,9 @@ public class FollowCamera : MonoBehaviour
     float velocityY = 0.0f;
     float rotationYAxis = 0.0f;
     float rotationXAxis = 0.0f;
-    private float centeringAcceleration = .1f;
+    private float centeringAcceleration = .05f;
     private float centeringSpeed = 0f;
+    private Vector3 centeringTargetForward = Vector3.zero;
 
     [Header("Crosshair used when aiming")]
     public GameObject crosshair;
@@ -83,6 +84,7 @@ public class FollowCamera : MonoBehaviour
             else if (Input.GetButtonDown("Cam Center"))
             {
                 cameraState = CameraState.centering;
+                centeringTargetForward = target.GetChild(0).forward;
                 centeringSpeed = 0f;
             }
 
@@ -96,7 +98,7 @@ public class FollowCamera : MonoBehaviour
         switch (cameraState)
         {
             case CameraState.centering:
-                transform.forward = target.GetChild(0).forward;
+                transform.forward = centeringTargetForward;
                 centeringSpeed += centeringAcceleration;
                 rotationYAxis = Mathf.Lerp(rotationYAxis, transform.localRotation.eulerAngles.y, centeringSpeed);
                 if (Mathf.Abs(rotationYAxis - transform.localRotation.eulerAngles.y) < 1)

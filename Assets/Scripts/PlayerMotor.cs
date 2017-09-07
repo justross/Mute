@@ -45,7 +45,7 @@ public class PlayerMotor : MonoBehaviour
     private FollowCamera followCamera;
     private Transform grappleTarget;
 
-
+    Transform cachedMovement = null;
     // Use this for initialization
     void Start()
     {
@@ -138,22 +138,6 @@ public class PlayerMotor : MonoBehaviour
 
                 CalculateVelocity();
                 Vector3 movement = new Vector3(velocity.x, 0, velocity.z);
-                // If camera is centering or the player has not moved the aiming axis since centering then don't move in the direction of the camera
-                // if (followCamera.cameraState != FollowCamera.CameraState.centering && (heldXInput != inputX || heldYInput != inputY))
-                // {
-                //     movement = cameraRig.TransformDirection(movement);
-                //     heldXInput = float.MaxValue;
-                //     heldYInput = float.MaxValue;
-                // }
-                // else if (followCamera.cameraState == FollowCamera.CameraState.centering)
-                // {
-                //     Debug.Log("Not inputting shit");
-                //     heldXInput = inputX;
-                //     heldYInput = inputY;
-                // }
-                // else
-                //     Debug.Log("Not inputting shit");
-                    
                 movement = cameraRig.TransformDirection(movement);
 
                 movement.y = velocity.y;
@@ -164,7 +148,6 @@ public class PlayerMotor : MonoBehaviour
                     jumpCounter = 0;
                     timer = 0;
                 }
-                Debug.Log(move.magnitude);
                 break;
         }
 

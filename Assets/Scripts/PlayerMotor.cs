@@ -34,6 +34,8 @@ public class PlayerMotor : MonoBehaviour
     private Vector3 move = Vector3.zero;
     private float inputX = 0;
     private float inputY = 0;
+    private float heldXInput = 0;
+    private float heldYInput = 0;
     private CharacterController characterController = null;
     int jumpCounter = 0;
     float gravity = 0;
@@ -73,7 +75,13 @@ public class PlayerMotor : MonoBehaviour
                 inputX = Input.GetAxisRaw("Horizontal");
                 inputY = Input.GetAxisRaw("Vertical");
 
-                Vector2 input = new Vector2(inputX, inputY);
+                Vector3 input = new Vector3(inputX, 0f, inputY);
+                if(input.magnitude > 1f)
+                {
+                    input /= input.magnitude;
+                }
+                move.x = input.x;
+                move.z = input.z;
 
                 //Calculate our physics constants for this frame
                 gravity = (2 * maxJumpHeight) / Mathf.Pow(maxJumpTime, 2);
@@ -96,8 +104,8 @@ public class PlayerMotor : MonoBehaviour
 
                     if (airControl)
                     {
-                        move.x = ((inputX * airControlFactor) * acceleration);
-                        move.z = ((inputY * airControlFactor) * acceleration);
+                        move.x *= airControlFactor * acceleration;
+                        move.z *= airControlFactor * acceleration;
                     }
 
                     if (Input.GetButtonUp("Jump") && move.y > 0)
@@ -117,8 +125,8 @@ public class PlayerMotor : MonoBehaviour
                 else
                 {
                     CalculateDrag();
-                    move.x = (inputX * acceleration);
-                    move.z = (inputY * acceleration);
+                    move.x *= acceleration;
+                    move.z *= acceleration;
                     move.y = -0.75f;
                     if (Input.GetButtonDown("Jump"))
                     {
@@ -130,7 +138,24 @@ public class PlayerMotor : MonoBehaviour
 
                 CalculateVelocity();
                 Vector3 movement = new Vector3(velocity.x, 0, velocity.z);
+                // If camera is centering or the player has not moved the aiming axis since centering then don't move in the direction of the camera
+                // if (followCamera.cameraState != FollowCamera.CameraState.centering && (heldXInput != inputX || heldYInput != inputY))
+                // {
+                //     movement = cameraRig.TransformDirection(movement);
+                //     heldXInput = float.MaxValue;
+                //     heldYInput = float.MaxValue;
+                // }
+                // else if (followCamera.cameraState == FollowCamera.CameraState.centering)
+                // {
+                //     Debug.Log("Not inputting shit");
+                //     heldXInput = inputX;
+                //     heldYInput = inputY;
+                // }
+                // else
+                //     Debug.Log("Not inputting shit");
+                    
                 movement = cameraRig.TransformDirection(movement);
+
                 movement.y = velocity.y;
                 grounded = (characterController.Move(movement * Time.deltaTime) & CollisionFlags.Below) != 0;
                 //if we became or stayed grounded on this frame, reset the jump counter
@@ -139,6 +164,7 @@ public class PlayerMotor : MonoBehaviour
                     jumpCounter = 0;
                     timer = 0;
                 }
+                Debug.Log(move.magnitude);
                 break;
         }
 
@@ -183,8 +209,10 @@ public class PlayerMotor : MonoBehaviour
         velocity.y = move.y;
         velocity.z += move.z * Time.deltaTime;
 
-        velocity.x = Mathf.Clamp(velocity.x, -maxSpeed, maxSpeed);
-        velocity.z = Mathf.Clamp(velocity.z, -maxSpeed, maxSpeed);
+        Vector2 v2 = new Vector2(velocity.x, velocity.z);
+        v2 = Vector2.ClampMagnitude(v2, maxSpeed);
+        velocity.x = v2.x;
+        velocity.z = v2.y;
     }
 
     void CalculateDrag()

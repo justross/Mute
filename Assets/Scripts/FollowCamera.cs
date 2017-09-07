@@ -22,11 +22,11 @@ public class FollowCamera : MonoBehaviour
     // limits for aiming camera view
     private float aimXMinLimit = -80f;
     private float aimXMaxLimit = 80f;
-    private float aimYMinLimit = -80f;
-    private float aimYMaxLimit = 80f;
 
     // lerp speed for moving camera into/out of aiming mode position
     private float aimPosSpeed = 5f;
+
+    private bool onWall = false;
 
     private Vector3 offset;
     private new Camera camera;
@@ -134,6 +134,7 @@ public class FollowCamera : MonoBehaviour
 
                 // Over the shoulder position with an offset based on how high or low the camera is looking.
                 Vector3 aimingPosition = targetHead.position - (transform.forward * 5f * viewAnglePercentage) + (targetHead.up * .65f * viewAnglePercentage);
+
                 if (!onWall)
                 {
                     aimingPosition.x = Mathf.Lerp(camera.transform.position.x, aimingPosition.x, Time.deltaTime * aimPosSpeed);
@@ -215,7 +216,6 @@ public class FollowCamera : MonoBehaviour
     /// <summary>
     /// Checks if a wall is between where the camera moved and the player
     /// </summary>
-    private bool onWall = false;
     private void checkWalls()
     {
         RaycastHit wallHit = new RaycastHit();

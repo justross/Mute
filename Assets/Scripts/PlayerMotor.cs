@@ -218,7 +218,6 @@ public class PlayerMotor : MonoBehaviour
                 }
                 break;
         }
-        Debug.Log(moveState);
     }
 
     void LateUpdate()

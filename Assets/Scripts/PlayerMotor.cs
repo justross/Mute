@@ -50,19 +50,21 @@ public class PlayerMotor : MonoBehaviour
     private Transform grappleTarget;
     private Vector3 movement = Vector3.zero;
     private Vector3 input = Vector3.zero;
+    private IPlayerInput playerInput;
 
     // Use this for initialization
     void Start()
     {
         characterController = GetComponent<CharacterController>();
         followCamera = cameraRig.gameObject.GetComponent<FollowCamera>();
+        playerInput = GetComponent<IPlayerInput>();
     }
 
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetButtonDown("Jump") && grounded)
+        if (playerInput.GetButtonInput("JumpButtonDown") && grounded)
         {
             moveState = MoveState.jumping;
             move.y = jumpVelocity;
@@ -82,8 +84,8 @@ public class PlayerMotor : MonoBehaviour
                 break;
 
             case MoveState.jumping:
-                inputX = Input.GetAxisRaw("Horizontal");
-                inputY = Input.GetAxisRaw("Vertical");
+                inputX = playerInput.GetAxisInput("MoveX");
+                inputY = playerInput.GetAxisInput("MoveY");
 
                 input = new Vector3(inputX, 0f, inputY);
                 if (input.magnitude > 1f)
@@ -114,13 +116,13 @@ public class PlayerMotor : MonoBehaviour
                     move.z *= airControlFactor * acceleration;
                 }
 
-                if (Input.GetButtonUp("Jump") && move.y > 0)
+                if (playerInput.GetButtonInput("JumpButtonUp") && move.y > 0)
                 {
                     //choose the minimum between the exit velocity and current upward velocity
                     move.y = Mathf.Min(velocityJumpTermination, move.y);
                 }
 
-                if (Input.GetButtonDown("Jump") && jumpCounter < jumpCount)
+                if (playerInput.GetButtonInput("JumpButtonDown") && jumpCounter < jumpCount)
                 {
                     move.y = jumpVelocity;
                     jumpCounter++;
@@ -141,8 +143,8 @@ public class PlayerMotor : MonoBehaviour
                 break;
 
             default:
-                inputX = Input.GetAxisRaw("Horizontal");
-                inputY = Input.GetAxisRaw("Vertical");
+                inputX = playerInput.GetAxisInput("MoveX");
+                inputY = playerInput.GetAxisInput("MoveY");
 
                 input = new Vector3(inputX, 0f, inputY);
                 if (input.magnitude > 1f)

@@ -38,7 +38,7 @@ InputManager:
     axis: 0
     joyNum: 0
   - serializedVersion: 3
-    m_Name: Fire1
+    m_Name: Grappling
     descriptiveName: 
     descriptiveNegativeName: 
     negativeButton: 
@@ -54,7 +54,7 @@ InputManager:
     axis: 0
     joyNum: 0
   - serializedVersion: 3
-    m_Name: Fire2
+    m_Name: Aiming
     descriptiveName: 
     descriptiveNegativeName: 
     negativeButton: 
@@ -70,7 +70,7 @@ InputManager:
     axis: 0
     joyNum: 0
   - serializedVersion: 3
-    m_Name: Fire3
+    m_Name: Cam Center
     descriptiveName: 
     descriptiveNegativeName: 
     negativeButton: 
@@ -102,7 +102,7 @@ InputManager:
     axis: 0
     joyNum: 0
   - serializedVersion: 3
-    m_Name: Joy X
+    m_Name: Look Axis X
     descriptiveName: 
     descriptiveNegativeName: 
     negativeButton: 
@@ -118,7 +118,7 @@ InputManager:
     axis: 0
     joyNum: 0
   - serializedVersion: 3
-    m_Name: Joy Y
+    m_Name: Look Axis Y
     descriptiveName: 
     descriptiveNegativeName: 
     negativeButton: 
@@ -278,7 +278,7 @@ InputManager:
     axis: 0
     joyNum: 0
   - serializedVersion: 3
-    m_Name: Joy X
+    m_Name: Look Axis X
     descriptiveName: 
     descriptiveNegativeName: 
     negativeButton: 
@@ -294,7 +294,7 @@ InputManager:
     axis: 3
     joyNum: 1
   - serializedVersion: 3
-    m_Name: Joy Y
+    m_Name: Look Axis Y
     descriptiveName: 
     descriptiveNegativeName: 
     negativeButton: 

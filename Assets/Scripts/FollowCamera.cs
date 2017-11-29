@@ -68,6 +68,8 @@ public class FollowCamera : MonoBehaviour
         Vector3 angles = transform.eulerAngles;
         rotationYAxis = (rotationYAxis == 0) ? angles.y : rotationYAxis;
         rotationXAxis = angles.x;
+
+        Cursor.lockState = CursorLockMode.Locked;
     }
 
     // Update is called once per frame
@@ -75,7 +77,7 @@ public class FollowCamera : MonoBehaviour
     {
         if (cameraState != CameraState.centering)
         {
-            if (Input.GetAxis("Aiming") > 0)
+            if (Input.GetAxis("Aiming") > 0 || Input.GetButton("Aiming"))
             {
                 cameraState = CameraState.aiming;
             }
@@ -113,8 +115,8 @@ public class FollowCamera : MonoBehaviour
                 calculatePosition();
 
                 // Calculate rotation
-                velocityY += Input.GetAxis("Joy Y") * rotateSensitivity * .8f * Time.deltaTime;
-                velocityX += Input.GetAxis("Joy X") * rotateSensitivity * .8f * Time.deltaTime;
+                velocityY += Input.GetAxis("Look Axis Y") * rotateSensitivity * .8f * Time.deltaTime;
+                velocityX += Input.GetAxis("Look Axis X") * rotateSensitivity * .8f * Time.deltaTime;
                 rotationYAxis += velocityX;
                 rotationXAxis += velocityY;
                 rotationXAxis = ClampAngle(rotationXAxis, aimXMinLimit, aimXMaxLimit);
@@ -146,8 +148,8 @@ public class FollowCamera : MonoBehaviour
 
             case CameraState.idle:
                 // update rotation of camera based on user input
-                velocityY += Input.GetAxis("Joy Y") * rotateSensitivity * Time.deltaTime;
-                velocityX += Input.GetAxis("Joy X") * rotateSensitivity * Time.deltaTime;
+                velocityY += Input.GetAxis("Look Axis Y") * rotateSensitivity * Time.deltaTime;
+                velocityX += Input.GetAxis("Look Axis X") * rotateSensitivity * Time.deltaTime;
                 calculatePosition();
                 calculateRotation();
                 calculateCamera();

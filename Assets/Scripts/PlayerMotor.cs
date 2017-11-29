@@ -50,21 +50,21 @@ public class PlayerMotor : MonoBehaviour
     private Transform grappleTarget;
     private Vector3 movement = Vector3.zero;
     private Vector3 input = Vector3.zero;
-    private IPlayerInput playerInput;
+    private IManagedInput managedInput;
 
     // Use this for initialization
     void Start()
     {
         characterController = GetComponent<CharacterController>();
         followCamera = cameraRig.gameObject.GetComponent<FollowCamera>();
-        playerInput = GetComponent<IPlayerInput>();
+        managedInput = GetComponent<IManagedInput>();
     }
 
 
     // Update is called once per frame
     void Update()
     {
-        if (playerInput.GetButtonInput("JumpButtonDown") && grounded)
+        if (managedInput.GetButtonInput("JumpButtonDown") && grounded)
         {
             moveState = MoveState.jumping;
             move.y = jumpVelocity;
@@ -73,7 +73,7 @@ public class PlayerMotor : MonoBehaviour
         switch (moveState)
         {
             case MoveState.grappling:
-                if (Input.GetAxis("Aiming") <= 0)
+                if (!managedInput.GetButtonInput("AimButton"))
                 {
                     moveState = MoveState.idle;
                 }
@@ -84,8 +84,8 @@ public class PlayerMotor : MonoBehaviour
                 break;
 
             case MoveState.jumping:
-                inputX = playerInput.GetAxisInput("MoveX");
-                inputY = playerInput.GetAxisInput("MoveY");
+                inputX = managedInput.GetAxisInput("MoveX");
+                inputY = managedInput.GetAxisInput("MoveY");
 
                 input = new Vector3(inputX, 0f, inputY);
                 if (input.magnitude > 1f)
@@ -116,13 +116,13 @@ public class PlayerMotor : MonoBehaviour
                     move.z *= airControlFactor * acceleration;
                 }
 
-                if (playerInput.GetButtonInput("JumpButtonUp") && move.y > 0)
+                if (managedInput.GetButtonInput("JumpButtonUp") && move.y > 0)
                 {
                     //choose the minimum between the exit velocity and current upward velocity
                     move.y = Mathf.Min(velocityJumpTermination, move.y);
                 }
 
-                if (playerInput.GetButtonInput("JumpButtonDown") && jumpCounter < jumpCount)
+                if (managedInput.GetButtonInput("JumpButtonDown") && jumpCounter < jumpCount)
                 {
                     move.y = jumpVelocity;
                     jumpCounter++;
@@ -143,8 +143,8 @@ public class PlayerMotor : MonoBehaviour
                 break;
 
             default:
-                inputX = playerInput.GetAxisInput("MoveX");
-                inputY = playerInput.GetAxisInput("MoveY");
+                inputX = managedInput.GetAxisInput("MoveX");
+                inputY = managedInput.GetAxisInput("MoveY");
 
                 input = new Vector3(inputX, 0f, inputY);
                 if (input.magnitude > 1f)

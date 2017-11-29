@@ -10,12 +10,14 @@ public class Grapple : MonoBehaviour
     private GameObject grappleTarget;
     private FollowCamera cameraScript;
     private PlayerMotor playerMotorScript;
+    private IManagedInput managedInput;
 
     // Use this for initialization
     void Start()
     {
         cameraScript = cameraRig.gameObject.GetComponent<FollowCamera>();
         playerMotorScript = player.gameObject.GetComponent<PlayerMotor>();
+        managedInput = player.GetComponent<IManagedInput>();
     }
 
     // Update is called once per frame
@@ -48,7 +50,7 @@ public class Grapple : MonoBehaviour
             grappleTarget = null;
         }
 
-        if (Input.GetAxis("Grappling") > 0 && grappleTarget != null)
+        if (managedInput.GetButtonInput("GrappleButton") && grappleTarget != null)
         {
             playerMotorScript.grappleTo(grappleTarget.transform);
         }

@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+[System.Serializable]
 public class Command<T> {
     readonly string name;
     private T state;
@@ -30,6 +30,13 @@ public class Command<T> {
     {
         this.name = name;
         this.state = state;
+        this.command = f;
+    }
+
+    public Command(string name, CommandDelegate f)
+    {
+        this.name = name;
+        this.state = default(T);
         this.command = f;
     }
 

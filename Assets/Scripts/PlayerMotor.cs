@@ -17,7 +17,9 @@ public class PlayerMotor : MonoBehaviour
     [Range(0, 1)]
     public float airControlFactor = 0.75f;
 
-    // Time in ms the player has when falling that they can still do a full double jump
+    /// <summary
+    /// Time in ms the player has when falling that they can still do a full double jump.
+    /// </summary>
     public int ledgeForgivenessTime = 120;
 
     private Vector3 velocity;
@@ -25,6 +27,7 @@ public class PlayerMotor : MonoBehaviour
     public enum MoveState
     {
         idle,
+        jumping,
         grappling
     }
 
@@ -41,10 +44,12 @@ public class PlayerMotor : MonoBehaviour
     float gravity = 0;
     float jumpVelocity = 0;
     float velocityJumpTermination = 0;
+    float timer = 0;
     public Transform cameraRig;
     private FollowCamera followCamera;
     private Transform grappleTarget;
-
+    private Vector3 movement = Vector3.zero;
+    private Vector3 input = Vector3.zero;
 
     // Use this for initialization
     void Start()
@@ -54,10 +59,15 @@ public class PlayerMotor : MonoBehaviour
     }
 
 
-    float timer = 0;
     // Update is called once per frame
     void Update()
     {
+        if (Input.GetButtonDown("Jump") && grounded)
+        {
+            moveState = MoveState.jumping;
+            move.y = jumpVelocity;
+        }
+
         switch (moveState)
         {
             case MoveState.grappling:
@@ -71,12 +81,12 @@ public class PlayerMotor : MonoBehaviour
                 }
                 break;
 
-            default:
+            case MoveState.jumping:
                 inputX = Input.GetAxisRaw("Horizontal");
                 inputY = Input.GetAxisRaw("Vertical");
 
-                Vector3 input = new Vector3(inputX, 0f, inputY);
-                if(input.magnitude > 1f)
+                input = new Vector3(inputX, 0f, inputY);
+                if (input.magnitude > 1f)
                 {
                     input /= input.magnitude;
                 }
@@ -90,11 +100,70 @@ public class PlayerMotor : MonoBehaviour
                 //Calculate the downward velocity needed to exit a jump early. 
                 velocityJumpTermination = Mathf.Sqrt(Mathf.Pow(jumpVelocity, 2) + (2 * -gravity) * (maxJumpHeight - minJumpHeight));
 
+                CalculateDrag();
+                timer += 1000 * Time.deltaTime;
+                move.y -= gravity * Time.deltaTime;
+                if (timer >= ledgeForgivenessTime && jumpCounter < 1)
+                {
+                    jumpCounter++;
+                }
+
+                if (airControl)
+                {
+                    move.x *= airControlFactor * acceleration;
+                    move.z *= airControlFactor * acceleration;
+                }
+
+                if (Input.GetButtonUp("Jump") && move.y > 0)
+                {
+                    //choose the minimum between the exit velocity and current upward velocity
+                    move.y = Mathf.Min(velocityJumpTermination, move.y);
+                }
+
+                if (Input.GetButtonDown("Jump") && jumpCounter < jumpCount)
+                {
+                    move.y = jumpVelocity;
+                    jumpCounter++;
+                }
+                CalculateVelocity();
+                movement = new Vector3(velocity.x, 0, velocity.z);
+                movement = cameraRig.TransformDirection(movement);
+
+                movement.y = velocity.y;
+                grounded = (characterController.Move(movement * Time.deltaTime) & CollisionFlags.Below) != 0;
+                //if we became or stayed grounded on this frame, reset the jump counter
+                if (grounded)
+                {
+                    jumpCounter = 0;
+                    timer = 0;
+                    moveState = MoveState.idle;
+                }
+                break;
+
+            default:
+                inputX = Input.GetAxisRaw("Horizontal");
+                inputY = Input.GetAxisRaw("Vertical");
+
+                input = new Vector3(inputX, 0f, inputY);
+                if (input.magnitude > 1f)
+                {
+                    input /= input.magnitude;
+                }
+                move.x = input.x;
+                move.z = input.z;
+
+                //Calculate our physics constants for this frame
+                gravity = (2 * maxJumpHeight) / Mathf.Pow(maxJumpTime, 2);
+                jumpVelocity = Mathf.Sqrt(2 * gravity * maxJumpHeight);
+
+                //Calculate the downward velocity needed to exit a jump early. 
+                velocityJumpTermination = Mathf.Sqrt(Mathf.Pow(jumpVelocity, 2) + (2 * -gravity) * (maxJumpHeight - minJumpHeight));
+
+                CalculateDrag();
+
+
                 if (!grounded)
                 {
-
-                    CalculateDrag();
-
                     timer += 1000 * Time.deltaTime;
                     move.y -= gravity * Time.deltaTime;
                     if (timer >= ledgeForgivenessTime && jumpCounter < 1)
@@ -124,7 +193,6 @@ public class PlayerMotor : MonoBehaviour
                 }
                 else
                 {
-                    CalculateDrag();
                     move.x *= acceleration;
                     move.z *= acceleration;
                     move.y = -0.75f;
@@ -137,23 +205,7 @@ public class PlayerMotor : MonoBehaviour
                 }
 
                 CalculateVelocity();
-                Vector3 movement = new Vector3(velocity.x, 0, velocity.z);
-                // If camera is centering or the player has not moved the aiming axis since centering then don't move in the direction of the camera
-                // if (followCamera.cameraState != FollowCamera.CameraState.centering && (heldXInput != inputX || heldYInput != inputY))
-                // {
-                //     movement = cameraRig.TransformDirection(movement);
-                //     heldXInput = float.MaxValue;
-                //     heldYInput = float.MaxValue;
-                // }
-                // else if (followCamera.cameraState == FollowCamera.CameraState.centering)
-                // {
-                //     Debug.Log("Not inputting shit");
-                //     heldXInput = inputX;
-                //     heldYInput = inputY;
-                // }
-                // else
-                //     Debug.Log("Not inputting shit");
-                    
+                movement = new Vector3(velocity.x, 0, velocity.z);
                 movement = cameraRig.TransformDirection(movement);
 
                 movement.y = velocity.y;
@@ -164,10 +216,8 @@ public class PlayerMotor : MonoBehaviour
                     jumpCounter = 0;
                     timer = 0;
                 }
-                Debug.Log(move.magnitude);
                 break;
         }
-
     }
 
     void LateUpdate()
@@ -253,11 +303,14 @@ public class PlayerMotor : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Sets player's grappling target to target and sets move state to grappling.
+    /// </summary>
+    /// <param name="target"></param>
     public void grappleTo(Transform target)
     {
         grappleTarget = target;
         moveState = MoveState.grappling;
-
     }
 
 }

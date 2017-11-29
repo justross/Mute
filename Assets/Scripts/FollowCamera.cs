@@ -22,11 +22,11 @@ public class FollowCamera : MonoBehaviour
     // limits for aiming camera view
     private float aimXMinLimit = -80f;
     private float aimXMaxLimit = 80f;
-    private float aimYMinLimit = -80f;
-    private float aimYMaxLimit = 80f;
 
     // lerp speed for moving camera into/out of aiming mode position
     private float aimPosSpeed = 5f;
+
+    private bool onWall = false;
 
     private Vector3 offset;
     private new Camera camera;
@@ -38,8 +38,9 @@ public class FollowCamera : MonoBehaviour
     float velocityY = 0.0f;
     float rotationYAxis = 0.0f;
     float rotationXAxis = 0.0f;
-    private float centeringAcceleration = .1f;
+    private float centeringAcceleration = .05f;
     private float centeringSpeed = 0f;
+    private Vector3 centeringTargetForward = Vector3.zero;
 
     [Header("Crosshair used when aiming")]
     public GameObject crosshair;
@@ -85,6 +86,7 @@ public class FollowCamera : MonoBehaviour
             else if (Input.GetButtonDown("Cam Center"))
             {
                 cameraState = CameraState.centering;
+                centeringTargetForward = target.GetChild(0).forward;
                 centeringSpeed = 0f;
             }
 
@@ -98,7 +100,7 @@ public class FollowCamera : MonoBehaviour
         switch (cameraState)
         {
             case CameraState.centering:
-                transform.forward = target.GetChild(0).forward;
+                transform.forward = centeringTargetForward;
                 centeringSpeed += centeringAcceleration;
                 rotationYAxis = Mathf.Lerp(rotationYAxis, transform.localRotation.eulerAngles.y, centeringSpeed);
                 if (Mathf.Abs(rotationYAxis - transform.localRotation.eulerAngles.y) < 1)
@@ -134,6 +136,7 @@ public class FollowCamera : MonoBehaviour
 
                 // Over the shoulder position with an offset based on how high or low the camera is looking.
                 Vector3 aimingPosition = targetHead.position - (transform.forward * 5f * viewAnglePercentage) + (targetHead.up * .65f * viewAnglePercentage);
+
                 if (!onWall)
                 {
                     aimingPosition.x = Mathf.Lerp(camera.transform.position.x, aimingPosition.x, Time.deltaTime * aimPosSpeed);
@@ -215,7 +218,6 @@ public class FollowCamera : MonoBehaviour
     /// <summary>
     /// Checks if a wall is between where the camera moved and the player
     /// </summary>
-    private bool onWall = false;
     private void checkWalls()
     {
         RaycastHit wallHit = new RaycastHit();

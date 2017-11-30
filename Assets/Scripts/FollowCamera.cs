@@ -41,6 +41,7 @@ public class FollowCamera : MonoBehaviour
     private float centeringAcceleration = .05f;
     private float centeringSpeed = 0f;
     private Vector3 centeringTargetForward = Vector3.zero;
+    private IManagedInput managedInput;
 
     [Header("Crosshair used when aiming")]
     public GameObject crosshair;
@@ -63,7 +64,7 @@ public class FollowCamera : MonoBehaviour
     {
         newPos = new Vector3(target.position.x, target.position.y, target.position.z);
         camera = GetComponentInChildren<Camera>();
-
+        managedInput = target.GetComponent<IManagedInput>();
         targetHead = target.Find("Head");
 
         Vector3 angles = transform.eulerAngles;
@@ -78,12 +79,12 @@ public class FollowCamera : MonoBehaviour
     {
         if (cameraState != CameraState.centering)
         {
-            if (Input.GetAxis("Aiming") > 0 || Input.GetButton("Aiming"))
+            if (managedInput.GetButtonInput(PlayerInput.AIM_BUTTON))
             {
                 cameraState = CameraState.aiming;
             }
 
-            else if (Input.GetButtonDown("Cam Center"))
+            else if (managedInput.GetButtonInput(PlayerInput.CAM_CENTER))
             {
                 cameraState = CameraState.centering;
                 centeringTargetForward = target.GetChild(0).forward;
@@ -117,8 +118,8 @@ public class FollowCamera : MonoBehaviour
                 calculatePosition();
 
                 // Calculate rotation
-                velocityY += Input.GetAxis("Look Axis Y") * rotateSensitivity * .8f * Time.deltaTime;
-                velocityX += Input.GetAxis("Look Axis X") * rotateSensitivity * .8f * Time.deltaTime;
+                velocityY += managedInput.GetAxisInput(PlayerInput.AIM_Y) * rotateSensitivity * .8f * Time.deltaTime;
+                velocityX += managedInput.GetAxisInput(PlayerInput.AIM_X) * rotateSensitivity * .8f * Time.deltaTime;
                 rotationYAxis += velocityX;
                 rotationXAxis += velocityY;
                 rotationXAxis = ClampAngle(rotationXAxis, aimXMinLimit, aimXMaxLimit);
@@ -151,8 +152,8 @@ public class FollowCamera : MonoBehaviour
 
             case CameraState.idle:
                 // update rotation of camera based on user input
-                velocityY += Input.GetAxis("Look Axis Y") * rotateSensitivity * Time.deltaTime;
-                velocityX += Input.GetAxis("Look Axis X") * rotateSensitivity * Time.deltaTime;
+                velocityY += managedInput.GetAxisInput(PlayerInput.AIM_Y) * rotateSensitivity * Time.deltaTime;
+                velocityX += managedInput.GetAxisInput(PlayerInput.AIM_X) * rotateSensitivity * Time.deltaTime;
                 calculatePosition();
                 calculateRotation();
                 calculateCamera();

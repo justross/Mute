@@ -5,16 +5,20 @@ using UnityEngine;
 
 public class PlayerInput : MonoBehaviour, IManagedInput {
 
-    public Command<bool> JumpButtonDown;
-    public Command<bool> JumpButtonUp;
-    public Command<bool> AimButton;
-    public Command<bool> GrappleButton;
+    public Command<bool> JumpDown;
+    public Command<bool> JumpUp;
+    public Command<bool> Aim;
+    public Command<bool> Grapple;
+    public Command<bool> CameraCenter;
     public Command<float> MoveX;
     public Command<float> MoveY;
+    public Command<float> AimX;
+    public Command<float> AimY;
 
     public KeyCode JumpKey;
     public KeyCode AimKey;
     public KeyCode GrappleKey;
+    public KeyCode CenterKey;
 
     [SerializeField]
     [HideInInspector]
@@ -29,12 +33,15 @@ public class PlayerInput : MonoBehaviour, IManagedInput {
     [HideInInspector]
     private string aimYAxis;
 
-    const string JUMP_BUTTON_DOWN = "JumpButtonDown";
-    const string JUMP_BUTTON_UP = "JumpButtonUp";
-    const string AIM_BUTTON = "AimButton";
-    const string GRAPPLE_BUTTON = "GrappleButton";
-    const string MOVE_X = "MoveX";
-    const string MOVE_Y = "MoveY";
+    public const string JUMP_BUTTON_DOWN = "JumpDown";
+    public const string JUMP_BUTTON_UP = "JumpUp";
+    public const string AIM_BUTTON = "Aim";
+    public const string GRAPPLE_BUTTON = "Grapple";
+    public const string CAM_CENTER = "CameraCenter";
+    public const string MOVE_X = "MoveX";
+    public const string MOVE_Y = "MoveY";
+    public const string AIM_X = "AimX";
+    public const string AIM_Y = "AimY";
 
     public string MoveXAxis
     {
@@ -97,6 +104,10 @@ public class PlayerInput : MonoBehaviour, IManagedInput {
                 return MoveX.State;
             case MOVE_Y:
                 return MoveY.State;
+            case AIM_X:
+                return AimX.State;
+            case AIM_Y:
+                return AimY.State;
             default:
                 Debug.Log("Input type not implemented.");
                 return 0;
@@ -109,15 +120,17 @@ public class PlayerInput : MonoBehaviour, IManagedInput {
         switch (name)
         {
             case JUMP_BUTTON_DOWN:
-                return JumpButtonDown.State;
+                return JumpDown.State;
             case JUMP_BUTTON_UP:
-                return JumpButtonUp.State;
+                return JumpUp.State;
             case AIM_BUTTON:
-                return AimButton.State;
+                return Aim.State;
             case GRAPPLE_BUTTON:
-                return GrappleButton.State;
+                return Grapple.State;
+            case CAM_CENTER:
+                return CameraCenter.State;
             default:
-                Debug.LogError("Input type not implemented.");
+                Debug.LogError("Input " + name + " not implemented.");
                 return false;
         }
     }
@@ -125,12 +138,15 @@ public class PlayerInput : MonoBehaviour, IManagedInput {
 
     // Use this for initialization
     void Start () {
-        JumpButtonDown = new Command<bool>(JUMP_BUTTON_DOWN, () => { return Input.GetKeyDown(JumpKey); });
-        JumpButtonUp = new Command<bool>(JUMP_BUTTON_UP, () => { return Input.GetKeyUp(JumpKey);});
-        AimButton = new Command<bool>(AIM_BUTTON, () => { return Input.GetKey(AimKey) || Input.GetAxisRaw("Aiming") <= 0; });
-        GrappleButton = new Command<bool>(AIM_BUTTON, () => { return Input.GetKey(GrappleKey) || Input.GetAxisRaw("Grapple") > 0; });
+        JumpDown = new Command<bool>(JUMP_BUTTON_DOWN, () => { return Input.GetKeyDown(JumpKey); });
+        JumpUp = new Command<bool>(JUMP_BUTTON_UP, () => { return Input.GetKeyUp(JumpKey);});
+        Aim = new Command<bool>(AIM_BUTTON, () => { return Input.GetKey(AimKey);});
+        Grapple = new Command<bool>(AIM_BUTTON, () => { return Input.GetKey(GrappleKey); });
+        CameraCenter = new Command<bool>(CAM_CENTER, () => { return Input.GetKey(CenterKey); });
         MoveX = new Command<float>(MOVE_X, () => { return Input.GetAxisRaw(MoveXAxis);});
         MoveY = new Command<float>(MOVE_Y, () => { return Input.GetAxisRaw(MoveYAxis);});
+        AimX = new Command<float>(AIM_X, () => { return Input.GetAxisRaw(AimXAxis); });
+        AimY = new Command<float>(AIM_Y, () => { return Input.GetAxisRaw(AimYAxis); });
     }
 
 

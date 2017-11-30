@@ -2277,7 +2277,7 @@ MonoBehaviour:
   maxJumpTime: 0.44
   jumpCount: 2
   airControl: 1
-  airControlFactor: 0.66
+  airControlFactor: 0.5
   ledgeForgivenessTime: 120
   moveState: 0
   cameraRig: {fileID: 835609601}
@@ -2324,6 +2324,7 @@ MonoBehaviour:
   JumpKey: 32
   AimKey: 324
   GrappleKey: 323
+  CenterKey: 326
   moveXAxis: Horizontal
   moveYAxis: Vertical
   aimXAxis: Look Axis X

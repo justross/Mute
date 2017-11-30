@@ -50,7 +50,7 @@ public class Grapple : MonoBehaviour
             grappleTarget = null;
         }
 
-        if (managedInput.GetButtonInput("GrappleButton") && grappleTarget != null)
+        if (managedInput.GetButtonInput(PlayerInput.GRAPPLE_BUTTON) && grappleTarget != null)
         {
             playerMotorScript.grappleTo(grappleTarget.transform);
         }

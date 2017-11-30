@@ -7,10 +7,10 @@ using UnityEditor;
 public class PlayerInputEditor : Editor {
 
     string[] _axes;
-    int _aimXIndex;
-    int _aimYIndex;
-    int _moveXIndex;
-    int _moveYIndex;
+    int _aimXIndex = 0;
+    int _aimYIndex = 0;
+    int _moveXIndex = 0;
+    int _moveYIndex = 0;
 
     
     public override void OnInspectorGUI()
@@ -20,13 +20,13 @@ public class PlayerInputEditor : Editor {
         DrawDefaultInspector();
 
         // set editor indexes based on what is set in the PlayerInput component
-        if(p_input.AimXAxis != "")
+        if(p_input.AimXAxis != null)
             _aimXIndex = ArrayUtility.IndexOf(_axes, p_input.AimXAxis);
-        if (p_input.AimYAxis != "")
+        if (p_input.AimYAxis != null)
             _aimYIndex = ArrayUtility.IndexOf(_axes, p_input.AimYAxis);
-        if (p_input.MoveXAxis != "")
+        if (p_input.MoveXAxis != null)
             _moveXIndex = ArrayUtility.IndexOf(_axes, p_input.MoveXAxis);
-        if (p_input.MoveYAxis != "")
+        if (p_input.MoveYAxis != null)
             _moveYIndex = ArrayUtility.IndexOf(_axes, p_input.MoveYAxis);
 
         // Draw our dropdowns

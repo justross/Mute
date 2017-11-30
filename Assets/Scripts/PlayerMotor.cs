@@ -64,7 +64,7 @@ public class PlayerMotor : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (managedInput.GetButtonInput("JumpButtonDown") && grounded)
+        if (managedInput.GetButtonInput(PlayerInput.JUMP_BUTTON_DOWN) && grounded)
         {
             moveState = MoveState.jumping;
             move.y = jumpVelocity;
@@ -73,7 +73,7 @@ public class PlayerMotor : MonoBehaviour
         switch (moveState)
         {
             case MoveState.grappling:
-                if (!managedInput.GetButtonInput("AimButton"))
+                if (!managedInput.GetButtonInput(PlayerInput.AIM_BUTTON))
                 {
                     moveState = MoveState.idle;
                 }
@@ -84,14 +84,21 @@ public class PlayerMotor : MonoBehaviour
                 break;
 
             case MoveState.jumping:
-                inputX = managedInput.GetAxisInput("MoveX");
-                inputY = managedInput.GetAxisInput("MoveY");
+                inputX = managedInput.GetAxisInput(PlayerInput.MOVE_X);
+                inputY = managedInput.GetAxisInput(PlayerInput.MOVE_X);
 
                 input = new Vector3(inputX, 0f, inputY);
                 if (input.magnitude > 1f)
                 {
                     input /= input.magnitude;
                 }
+
+                if (airControl)
+                {
+                    input.x *= airControlFactor;
+                    input.z *= airControlFactor;
+                }
+
                 move.x = input.x;
                 move.z = input.z;
 
@@ -101,8 +108,7 @@ public class PlayerMotor : MonoBehaviour
 
                 //Calculate the downward velocity needed to exit a jump early. 
                 velocityJumpTermination = Mathf.Sqrt(Mathf.Pow(jumpVelocity, 2) + (2 * -gravity) * (maxJumpHeight - minJumpHeight));
-
-                CalculateDrag();
+                                
                 timer += 1000 * Time.deltaTime;
                 move.y -= gravity * Time.deltaTime;
                 if (timer >= ledgeForgivenessTime && jumpCounter < 1)
@@ -110,23 +116,19 @@ public class PlayerMotor : MonoBehaviour
                     jumpCounter++;
                 }
 
-                if (airControl)
-                {
-                    move.x *= airControlFactor * acceleration;
-                    move.z *= airControlFactor * acceleration;
-                }
-
-                if (managedInput.GetButtonInput("JumpButtonUp") && move.y > 0)
+                if (managedInput.GetButtonInput(PlayerInput.JUMP_BUTTON_UP) && move.y > 0)
                 {
                     //choose the minimum between the exit velocity and current upward velocity
                     move.y = Mathf.Min(velocityJumpTermination, move.y);
                 }
 
-                if (managedInput.GetButtonInput("JumpButtonDown") && jumpCounter < jumpCount)
+                if (managedInput.GetButtonInput(PlayerInput.JUMP_BUTTON_DOWN) && jumpCounter < jumpCount)
                 {
                     move.y = jumpVelocity;
                     jumpCounter++;
                 }
+
+                CalculateDrag();
                 CalculateVelocity();
                 movement = new Vector3(velocity.x, 0, velocity.z);
                 movement = cameraRig.TransformDirection(movement);
@@ -143,8 +145,8 @@ public class PlayerMotor : MonoBehaviour
                 break;
 
             default:
-                inputX = managedInput.GetAxisInput("MoveX");
-                inputY = managedInput.GetAxisInput("MoveY");
+                inputX = managedInput.GetAxisInput(PlayerInput.MOVE_X);
+                inputY = managedInput.GetAxisInput(PlayerInput.MOVE_Y);
 
                 input = new Vector3(inputX, 0f, inputY);
                 if (input.magnitude > 1f)
@@ -179,13 +181,13 @@ public class PlayerMotor : MonoBehaviour
                         move.z *= airControlFactor * acceleration;
                     }
 
-                    if (Input.GetButtonUp("Jump") && move.y > 0)
+                    if (managedInput.GetButtonInput(PlayerInput.JUMP_BUTTON_UP) && move.y > 0)
                     {
                         //choose the minimum between the exit velocity and current upward velocity
                         move.y = Mathf.Min(velocityJumpTermination, move.y);
                     }
 
-                    if (Input.GetButtonDown("Jump") && jumpCounter < jumpCount)
+                    if (managedInput.GetButtonInput(PlayerInput.JUMP_BUTTON_DOWN) && jumpCounter < jumpCount)
                     {
 
                         move.y = jumpVelocity;
@@ -198,7 +200,7 @@ public class PlayerMotor : MonoBehaviour
                     move.x *= acceleration;
                     move.z *= acceleration;
                     move.y = -0.75f;
-                    if (Input.GetButtonDown("Jump"))
+                    if (managedInput.GetButtonInput(PlayerInput.JUMP_BUTTON_DOWN))
                     {
                         move.y = jumpVelocity;
                         jumpCounter++;
@@ -272,36 +274,30 @@ public class PlayerMotor : MonoBehaviour
 
         float drag = grounded ? stoppingSpeed : airStoppingSpeed;
 
-        if (inputX == 0)
+        if (velocity.x > 0.25f)
         {
-            if (velocity.x > 0.25f)
-            {
-                velocity.x -= drag * Time.deltaTime;
-            }
-            else if (velocity.x < -0.25f)
-            {
-                velocity.x += drag * Time.deltaTime;
-            }
-            else
-            {
-                velocity.x = 0;
-            }
+            velocity.x -= drag * Time.deltaTime;
+        }
+        else if (velocity.x < -0.25f)
+        {
+            velocity.x += drag * Time.deltaTime;
+        }
+        else
+        {
+            velocity.x = 0;
         }
 
-        if (inputY == 0)
+        if (velocity.z > 0.25f)
         {
-            if (velocity.z > 0.25f)
-            {
-                velocity.z -= drag * Time.deltaTime;
-            }
-            else if (velocity.z < -0.25f)
-            {
-                velocity.z += drag * Time.deltaTime;
-            }
-            else
-            {
-                velocity.z = 0;
-            }
+            velocity.z -= drag * Time.deltaTime;
+        }
+        else if (velocity.z < -0.25f)
+        {
+            velocity.z += drag * Time.deltaTime;
+        }
+        else
+        {
+            velocity.z = 0;
         }
     }
 

@@ -6,18 +6,20 @@ public class PlayerAnimator : MonoBehaviour
 {
 
     private PlayerMotor playerMotor;
+    private IManagedInput managedInput;
     public float rotationDamping = 7.5f;
     // Use this for initialization
     void Start()
     {
         playerMotor = transform.parent.GetComponent<PlayerMotor>();
+        managedInput = transform.parent.GetComponent<IManagedInput>();
     }
 
     // Update is called once per frame
     void Update()
     {
 
-        Vector3 direction = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+        Vector3 direction = new Vector3(managedInput.GetAxisInput(PlayerInput.MOVE_X), 0, managedInput.GetAxisInput(PlayerInput.MOVE_Y));
         direction = playerMotor.cameraRig.TransformDirection(direction);
         if (direction != Vector3.zero)
         {

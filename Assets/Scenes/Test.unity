@@ -2279,7 +2279,7 @@ MonoBehaviour:
   airControl: 1
   airControlFactor: 0.5
   ledgeForgivenessTime: 120
-  moveState: 0
+  moveState: 1
   cameraRig: {fileID: 835609601}
 --- !u!143 &1209891257
 CharacterController:

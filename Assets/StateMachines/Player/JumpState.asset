@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: abab8628b5ea27b4ea3e246f784f390b, type: 3}
+  m_Name: JumpState
+  m_EditorClassIdentifier: 
+  actions:
+  - {fileID: 11400000, guid: c9cbf65753d307c4ba00f1095bd396e5, type: 2}
+  - {fileID: 11400000, guid: 770bad19f89b40a40893e15b9d3cc111, type: 2}
+  transitions:
+  - condition: {fileID: 11400000, guid: 5b6498ff4c38c1142afe956f9ddb0f4b, type: 2}
+    trueState: {fileID: 11400000}
+    falseState: {fileID: 0}
+  - condition: {fileID: 0}
+    trueState: {fileID: 0}
+    falseState: {fileID: 0}
+  sceneGizmoColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}

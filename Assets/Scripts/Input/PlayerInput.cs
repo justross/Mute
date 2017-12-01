@@ -134,8 +134,7 @@ public class PlayerInput : MonoBehaviour, IManagedInput {
                 return false;
         }
     }
-
-
+    
     // Use this for initialization
     void Start () {
         JumpDown = new Command<bool>(JUMP_BUTTON_DOWN, () => { return Input.GetKeyDown(JumpKey); });
@@ -148,7 +147,5 @@ public class PlayerInput : MonoBehaviour, IManagedInput {
         AimX = new Command<float>(AIM_X, () => { return Input.GetAxisRaw(AimXAxis); });
         AimY = new Command<float>(AIM_Y, () => { return Input.GetAxisRaw(AimYAxis); });
     }
-
-
 
 }

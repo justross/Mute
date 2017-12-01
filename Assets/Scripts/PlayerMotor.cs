@@ -27,7 +27,9 @@ public class PlayerMotor : MonoBehaviour
     public enum MoveState
     {
         idle,
+        moving,
         jumping,
+        landing,
         grappling
     }
 
@@ -75,32 +77,37 @@ public class PlayerMotor : MonoBehaviour
             case MoveState.grappling:
                 if (!managedInput.GetButtonInput(PlayerInput.AIM_BUTTON))
                 {
-                    moveState = MoveState.idle;
+                    moveState = MoveState.moving;
                 }
                 else
                 {
-                    characterController.Move(grappleTarget.position - transform.position);
+                    characterController.Move(grappleTarget.position - transform.position * Time.deltaTime);
                 }
                 break;
 
             case MoveState.jumping:
+                CalculateDrag();
+
                 inputX = managedInput.GetAxisInput(PlayerInput.MOVE_X);
                 inputY = managedInput.GetAxisInput(PlayerInput.MOVE_X);
 
                 input = new Vector3(inputX, 0f, inputY);
+
+                if (airControl)
+                {
+                    input.x *= airControlFactor * acceleration;
+                    input.z *= airControlFactor * acceleration;
+                }
+
                 if (input.magnitude > 1f)
                 {
                     input /= input.magnitude;
                 }
 
-                if (airControl)
-                {
-                    input.x *= airControlFactor;
-                    input.z *= airControlFactor;
-                }
 
-                move.x = input.x;
-                move.z = input.z;
+
+                move.x += input.x;
+                move.z += input.z;
 
                 //Calculate our physics constants for this frame
                 gravity = (2 * maxJumpHeight) / Mathf.Pow(maxJumpTime, 2);
@@ -128,7 +135,12 @@ public class PlayerMotor : MonoBehaviour
                     jumpCounter++;
                 }
 
-                CalculateDrag();
+                if (airControl)
+                {
+                    move.x *= airControlFactor;
+                    move.z *= airControlFactor;
+                }
+
                 CalculateVelocity();
                 movement = new Vector3(velocity.x, 0, velocity.z);
                 movement = cameraRig.TransformDirection(movement);
@@ -140,11 +152,11 @@ public class PlayerMotor : MonoBehaviour
                 {
                     jumpCounter = 0;
                     timer = 0;
-                    moveState = MoveState.idle;
+                    moveState = MoveState.moving;
                 }
                 break;
 
-            default:
+            case MoveState.moving:
                 inputX = managedInput.GetAxisInput(PlayerInput.MOVE_X);
                 inputY = managedInput.GetAxisInput(PlayerInput.MOVE_Y);
 
@@ -168,12 +180,6 @@ public class PlayerMotor : MonoBehaviour
 
                 if (!grounded)
                 {
-                    timer += 1000 * Time.deltaTime;
-                    move.y -= gravity * Time.deltaTime;
-                    if (timer >= ledgeForgivenessTime && jumpCounter < 1)
-                    {
-                        jumpCounter++;
-                    }
 
                     if (airControl)
                     {
@@ -181,11 +187,7 @@ public class PlayerMotor : MonoBehaviour
                         move.z *= airControlFactor * acceleration;
                     }
 
-                    if (managedInput.GetButtonInput(PlayerInput.JUMP_BUTTON_UP) && move.y > 0)
-                    {
-                        //choose the minimum between the exit velocity and current upward velocity
-                        move.y = Mathf.Min(velocityJumpTermination, move.y);
-                    }
+
 
                     if (managedInput.GetButtonInput(PlayerInput.JUMP_BUTTON_DOWN) && jumpCounter < jumpCount)
                     {
@@ -213,6 +215,7 @@ public class PlayerMotor : MonoBehaviour
                 movement = cameraRig.TransformDirection(movement);
 
                 movement.y = velocity.y;
+                bool lastFrame = grounded;
                 grounded = (characterController.Move(movement * Time.deltaTime) & CollisionFlags.Below) != 0;
                 //if we became or stayed grounded on this frame, reset the jump counter
                 if (grounded)
@@ -220,6 +223,12 @@ public class PlayerMotor : MonoBehaviour
                     jumpCounter = 0;
                     timer = 0;
                 }
+                //if we became grounded this frame
+                if(grounded && !lastFrame)
+                {
+                    // TODO : Transition to landing state
+                }
+
                 break;
         }
     }

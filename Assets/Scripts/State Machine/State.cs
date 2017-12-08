@@ -3,22 +3,22 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-namespace FSM
+namespace SimpleFSM
 {
-    [CreateAssetMenu(menuName = "FSM/New State")]
+    [CreateAssetMenu(menuName = "New State")]
     public class State : ScriptableObject
     {
         public Action[] actions;
-        public Transition[] transitions;
+        public List<Transition> transitions = new List<Transition>();
         public Color sceneGizmoColor = Color.grey;
 
-        public void UpdateState(Controller controller)
+        public void UpdateState(StateController controller)
         {
             DoActions(controller);
             CheckTransitions(controller);
         }
 
-        public void DoActions(Controller controller)
+        public void DoActions(StateController controller)
         {
             for (int i = 0; i < actions.Length; i++)
             {
@@ -26,22 +26,27 @@ namespace FSM
             }
         }
 
-        public void CheckTransitions(Controller controller)
+        public void CheckTransitions(StateController controller)
         {
-            for (int i = 0; i < transitions.Length; i++)
+            for (int i = 0; i < transitions.Count; i++)
             {
-                bool decisionSucceeded = transitions[i].condition.Decide(controller);
+                State transitionTo = transitions[i].DoTransition(controller);
+                // OR all different transitions.
+                if (transitionTo != null)
+                {
+                    controller.TransitionToState(transitionTo);
+                    return;
+                }
 
-                if (decisionSucceeded)
-                {
-                    controller.TransitionToState(transitions[i].trueState);
-                }
-                else
-                {
-                    controller.TransitionToState(transitions[i].falseState);
-                }
             }
+
         }
+
+        public override string ToString()
+        {
+            return this.name;
+        }
+
     }
 
 
